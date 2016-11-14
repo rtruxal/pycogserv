@@ -2,7 +2,10 @@
 Intro
 =====
 
-Currently only supports Python 2.7 AND IS **NOT** PRODUCTION READY.
+Currently only supports Python 2.7 and is **BY NO MEANS PRODUCTION READY.**
+
+VERSION=0.0.1
+
 
 This is an attempt to adapt tristantaos's [py-bing-search] (https://github.com/tristantao/py-bing-search) to Microsoft's new Cognitive Services APIs (aka Bing Search API v5) interface.
 Bing has notified their customers that all APIs with 'datamarket' in their endpoint URL will be deactivated on December 15th 2016.
