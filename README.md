@@ -16,7 +16,7 @@ Remember to ser the 'api_key' as your own.
 ####For Web Results:
 ```py
 >>> from py-cog-serv import BingWebSearch
->>> search_query = "ENTER YOUR ARBITRARY SEARCH TERMS HERE'
+>>> search_query = "ENTER YOUR ARBITRARY SEARCH TERMS HERE"
 >>> web_searcher = BingWebSearch(api_key=api_key, query=search_query, safe=False, headers=constants.HEADERS, addtnl_params=None) # see list of BASE_QUERY_PARAMS for compatible params. Must be in {param : value} format
 >>> return_json = web_searcher.search(limit=50) # 50 is the maximum number results returned per query. Pagination is in the works.
 ```
