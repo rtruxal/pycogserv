@@ -11,7 +11,7 @@ except:
     pass
 
 CLASSIFIERS = [
-    'Development Status :: 4 - Beta',
+    'Development Status :: 1 - Planning',
     'Intended Audience :: Developers',
     'License :: OSI Approved :: MIT License',
     'Operating System :: OS Independent',
@@ -24,6 +24,7 @@ KEYWORDS = ['Azure', 'Bing', 'API', 'Search', 'Cognitive Services', 'v5']
 
 INSTALL_REQUIRES = [
     'requests',
+    'fake_useragent',
 ]
 
 setup(

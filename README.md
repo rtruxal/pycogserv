@@ -42,12 +42,12 @@ Remember to set the `api_key` as your own.
 Notes
 =====
 
-Massive swaths of this v5 API interface were graciously stolen from py-bing-search
-you can find it here: https://github.com/tristantao/py-bing-search
+Massive swaths of this v5 API interface were graciously stolen from py-bing-search which you can find here: https://github.com/tristantao/py-bing-search
 
 
 I AM NOT A PROFESSIONAL PROGRAMMER AND JUST STARTING THIS.
-PLEASE HELP ME MAKE THIS NOT AWFUL!
+
+PLEASE HELP ME MAKE THIS NOT AWFUL.
 
 
 TODO
