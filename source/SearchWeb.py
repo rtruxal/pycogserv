@@ -77,14 +77,16 @@ class constants(object):
 
 
 class BingSearch(object):
-
+    """
+    Base-Class to elimnate redundancy for the common functionalities that cut across APIs
+    """
     def __init__(self, api_key, query, safe=False, header_dict=constants.HEADERS):
         self._initial_url_built = False
         self.api_key = api_key
         self.safe = safe
         self.query = query
         self.current_offset = 0
-        self.build_url()
+        self._build_url()
         if header_dict is constants.HEADERS:
             self.header = header_dict
             self.header['Ocp-Apim-Subscription-Key'] = api_key
@@ -93,13 +95,19 @@ class BingSearch(object):
 
     def search(self, limit=50):
         """
-
         :param limit: number of results to return. max is 50.
-        :return: a mess of json right now...in a list
+        :return json_results: a mess of json right now...in a dictionary.
         """
         return self._search(limit)
 
-    def build_url(self, param_query_dict=None):
+    def _build_url(self, param_query_dict=None):
+        """
+        Build query string for URL, minus the actual search query >> 'search?q=<RIGHT HERE>'
+        :param param_query_dict: if
+        :return None: After this step, URLs should look something like 'https://api.cognitive.microsoft.com/bing/v5.0/search?q={}&<param_name>=<param_value>&...'
+                      Notice the {} after ...search?q=
+                      This search query will be encoded and inserted here at time of execution.
+        """
         if self._initial_url_built and param_query_dict:
             pass
         elif not self._initial_url_built:
@@ -122,7 +130,7 @@ class BingSearch(object):
             if not headr:
                 api_key = raw_input('enter your api key')
                 ua_str = raw_input('enter a valid User-Agent string')
-                ipaddr = raw_input('enter your ip address (or leave blank to autodetect')
+                ipaddr = raw_input('enter your ip address (or leave blank to autodetect)')
                 if not ipaddr:
                     ipaddr = gethostbyname(gethostname())
                 headr['Ocp-Apim-Subscription-Key'] = api_key
@@ -150,8 +158,14 @@ class BingSearch(object):
 
 
 class BingWebSearch(BingSearch):
+    """
+    Web Search Object.
+    Allows for default or manual header entry.
+    Mandatory fields are 'api_key' and 'query'
+    Other defaults will specify you as a firefox user, add no addtnl query params, and will give you the max of 50 results returned for your query
+    Currently no support for paging, but functionality is in the works.
+    """
     def __init__(self, api_key, query, safe=False, header_dict=constants.HEADERS, addtnl_params=None):
-
         self.QUERY_URL = constants.WEBSEARCH_ENDPOINT + '{}'
         self.param_dict = OrderedDict()
 
@@ -169,6 +183,13 @@ class BingWebSearch(BingSearch):
 
 
     def _search(self, limit, override=False, newquery=None):
+        """
+        Meat-&Potatoes of the search. Inserts search query and makes API call.
+        :param limit: Number of return results. Max is 50
+        :param override: Set to True if you intend to use 'newquery' to modify the query on the fly
+        :param newquery: enter new query value if you so choose. Will not change query params.
+        :return json_results: JSON returned from Microsoft.
+        """
         url = self._insert_web_search_query(override=override, newquery=newquery)
         r = requests.get(url, headers=self.header)
         json_results = r.json()
@@ -182,8 +203,14 @@ class BingWebSearch(BingSearch):
 
 
     def _insert_web_search_query(self, override=False, newquery=None):
+        """
+        Basic encoding & insertion of search terms. Allows for override via method described in _search() above.
+        :param override: Set to True if you intend to use 'newquery' to modify the query on the fly
+        :param newquery: enter new query value if you so choose. Will not change query params.
+        :return finalized URL: Upon completion of this function, the URL used to call the API will be complete.
+        """
         if override:
-            return self.QUERY_URL.format(newquery)
+            return self.QUERY_URL.format(newquery.replace(' ', '+'))
         else:
             return self.QUERY_URL.format(self.query.replace(' ', '+'))
 
@@ -191,6 +218,10 @@ class BingWebSearch(BingSearch):
 
 class WebResult(object):
     '''
+
+    !!!!!!COPIED DIRECTLY FROM PY-BING-SEARCH.!!!!!!!!
+    !!!!!!CURRENTLY NOT HOOKED UP TO JSON RESULTS!!!!!
+
     The class represents a SINGLE search result.
     Each result will come with the following:
     #For the actual results#
@@ -201,6 +232,10 @@ class WebResult(object):
     #Meta info#:
     meta.uri: the search uri for bing
     meta.type: for the most part WebResult
+
+    !!!!!!COPIED DIRECTLY FROM PY-BING-SEARCH.!!!!!!!!
+    !!!!!!CURRENTLY NOT HOOKED UP TO JSON RESULTS!!!!!
+
     '''
 
     class _Meta(object):
