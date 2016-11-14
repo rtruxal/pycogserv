@@ -77,6 +77,7 @@ class constants(object):
 
 
 class BingSearch(object):
+
     def __init__(self, api_key, query, safe=False, header_dict=constants.HEADERS):
         self._initial_url_built = False
         self.api_key = api_key
