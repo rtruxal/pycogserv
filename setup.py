@@ -28,11 +28,11 @@ INSTALL_REQUIRES = [
 ]
 
 setup(
-    name='py-bing-search',
+    name='py-cog-serv',
     #packages = ['py_bing_search'],
     packages = find_packages(),
     version=VERSION,
-    author=u'Tristan Tao',
+    author=u'Rob Truxal',
     author_email='rtruxal2020@outlook.com',
     url='https://github.com/rtruxal/py-cog-serv',
     license='MIT',
