@@ -146,8 +146,6 @@ class BingSearch(object):
         Build query string for URL, minus the actual search query >> 'search?q=<RIGHT HERE>'
         :param param_query_dict: if
         :return None: After this step, URLs should look something like 'https://api.cognitive.microsoft.com/bing/v5.0/search?q={}&<param_name>=<param_value>&...'
-                      Notice the {} after ...search?q=
-                      This search query will be encoded and inserted here at time of execution.
         """
         if self._initial_url_built and param_query_dict:
             pass
@@ -199,7 +197,11 @@ class BingSearch(object):
 
 
 class QueryChecker():
-
+    """
+    Isolated human-error-checker class.
+    All methods are static and do not modify state.
+    if/else mess below forgoes optimization in favor of clarity.
+    """
     @staticmethod
     def check_web_params(query_dict, header_dict):
         responseFilters = ('Computation', 'Images', 'News', 'RelatedSearches', 'SpellSuggestions', 'TimeZone', 'Videos', 'Webpages')
@@ -264,11 +266,16 @@ class BingWebSearch(BingSearch):
         ## Run query validations
         is_ok = QueryChecker.check_web_params(self.param_dict, self.header)
         if is_ok:
-            print 'Query params passed validation. URL will be built.'
+            print 'Query params PASSED validation. URL will be built.'
             self._build_url()
         else: raise AttributeError('query checker has a bug')
         print 'run <instance>.search() to run query and print json returned\ncurrent URL format is {}'.format(self.QUERY_URL)
 
+    def __repr__(self):
+        return self.QUERY_URL + '\n{}'.format(self.header)
+
+    def __str__(self):
+        return 'URL: {}\n\nHeaders: {}'.format(self.QUERY_URL, self.header)
 
     def _search(self, limit, override=False, newquery=None):
         """
@@ -286,7 +293,7 @@ class BingWebSearch(BingSearch):
         """
         AS OF NOW I NEED TO PARSE THE JSON RESULTS.
         """
-        return url, json_results
+        return json_results
         # packaged_results = [WebResult(single_result_json) for single_result_json in json_results['d']['results']]
         # self.current_offset += min(50, limit, len(packaged_results))
         # return packaged_results
