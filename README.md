@@ -58,8 +58,8 @@ TODO
 * Parse the return JSON!...like any of it! just do something it's a mess!
 * Add image/news/video classes w/ support for API-specific querying
     * Base Endpoint URLs for these are partially built in class "constants"
-* Fix query params-checking
-* Parse queries into URLs better.
+* Fix query params-checking. **FINISHED-(ALPHA)**
+* Parse queries into URLs better. **FINISHED-(ALPHA)**
     * Use requests.utils.quote or some-such to encode things properly.
 * Set up error handling for query/second errors. Use time.sleep(1).
 * Implement paging with self.current_offset.

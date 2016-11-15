@@ -8,17 +8,18 @@ from collections import OrderedDict
 Massive swaths of this v5 API interface were graciously stolen from py-bing-search
 you can find it here: https://github.com/tristantao/py-bing-search
 
-for cc and mkt params, see https://msdn.microsoft.com/en-us/library/dn783426.aspx
+Modify query params in class 'constants.'
+    - You can also create your own own query-param-dict as a replacement, but use the same format.
+    - Dict entries of format "YourDict[key] == None" will be ignored and can therefore be safely included.
+    - For cc and mkt params, see https://msdn.microsoft.com/en-us/library/dn783426.aspx.
 
 I AM NOT A PROFESSIONAL PROGRAMMER AND JUST STARTING THIS.
 PLEASE HELP ME MAKE THIS NOT AWFUL!
-
 
 TODO:
     - parse the return JSON!...like any of it! just do something it's a mess!
     - Add image/news/video classes w/ support for API-specific querying
         --Base Endpoint URLs for these are partially built in class "constants"
-    - fix query params-checking
     - parse queries into URLs better.
         --Use requests.utils.quote or some-such to encode things properly.
     - set up error handling for query/second errors. Use time.sleep(1).
@@ -28,16 +29,51 @@ TODO:
 
 
 class constants(object):
+    """
+    Change these to fit your use-case.
+    They can also be accessed and changed on the fly from REPL.
+
+    The top section of this class is modifiable for configuration
+
+    The bottom section is not.
+
+    """
     user_agent = UA()
     HEADERS = OrderedDict()
+    INCLUDED_PARAMS = OrderedDict()
 
+    ###############################################
+    ## Enter default-header customizations here. ##
+    ###############################################
     HEADERS['Ocp-Apim-Subscription-Key'] = None
     HEADERS['User-Agent'] = user_agent.firefox
     HEADERS['X-Search-ClientIP'] = gethostbyname(gethostname())
     HEADERS['X-MSEdge-ClientID']= None
-    # HEADERS['Accept'] = None
-    # HEADERS['Accept-Language'] = None
-    # HEADERS['X-Search-Location'] = None
+    HEADERS['Accept'] = None
+    HEADERS['Accept-Language'] = None
+    HEADERS['X-Search-Location'] = None
+
+    ###############################################
+    ##     Enter query customizations here.      ##
+    ###############################################
+    ## Web Params:
+    INCLUDED_PARAMS['cc'] = None              # <--(See https://msdn.microsoft.com/en-us/library/dn783426.aspx#countrycodes)
+    INCLUDED_PARAMS['count'] = None           # <--(Enter a number from 0-50. Must by type==str. EX: count of 5 should be "5")
+    INCLUDED_PARAMS['freshness'] = None       # <--(Poss values are 'Day', 'Week', or 'Month')
+    INCLUDED_PARAMS['mkt'] = None             # <--(See https://msdn.microsoft.com/en-us/library/dn783426.aspx)
+    INCLUDED_PARAMS['offset'] = None          # <--(Use this in conjunction with totalEstimatedMatches and count to page. Same format as 'count')
+    INCLUDED_PARAMS['responseFilter'] = None  # <--(Poss values are 'Computation', 'Images', 'News', 'RelatedSearches', SpellSuggestions', 'TimeZone', 'Videos', or 'Webpages')
+    INCLUDED_PARAMS['safeSearch'] = None      # <--(Poss values are 'Off', 'Moderate', and 'Strict.')
+    INCLUDED_PARAMS['setLang'] = None         # <--(See ISO 639-1, 2-letter language codes here: https://www.loc.gov/standards/iso639-2/php/code_list.php)
+    INCLUDED_PARAMS['textDecorations'] = None # <--(Case-insensitive boolean. '(t|T)rue', or '(f|F)alse')
+    INCLUDED_PARAMS['textFormat'] = None      # <--(Poss values are 'Raw', and 'HTML.' Default is 'Raw' if left blank.)
+
+
+    ####################################################
+    ## ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !##
+    ##    DO NOT modify ANY of the constants below    ##
+    ## ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !##
+    ####################################################
 
     ## BASE_QUERY_PARAMS[0] & [1] are special! Don't move them!
     BASE_QUERY_PARAMS = (
@@ -63,9 +99,7 @@ class constants(object):
         'news' : 'news/',
         'news_trending' : 'news/trendingtopics/' # <-- works only for en-US and zh-CN
     }
-
     BASE_ENDPOINT = 'https://api.cognitive.microsoft.com/bing/v5.0/'
-
     ## Commented out Endpoint URLs have special format which is not defined by .../search?q=...
     ## These are not yet supported
     WEBSEARCH_ENDPOINT = BASE_ENDPOINT + '{}='.format(BASE_QUERY_PARAMS[0])
@@ -88,12 +122,16 @@ class BingSearch(object):
         self.safe = safe
         self.query = query
         self.current_offset = 0
-        self._build_url()
+
         if header_dict is constants.HEADERS:
             self.header = header_dict
             self.header['Ocp-Apim-Subscription-Key'] = api_key
+            for key, val in self.header.items():
+                if val == None:
+                    del self.header[key]
         else:
             self.header = self.manual_header_entry()
+
 
 
     def search(self, limit=50):
@@ -160,53 +198,42 @@ class BingSearch(object):
                 continue
 
 
-class QueryBuilder():
+class QueryChecker():
 
+    @staticmethod
+    def check_web_params(query_dict, header_dict):
+        responseFilters = ('Computation', 'Images', 'News', 'RelatedSearches', 'SpellSuggestions', 'TimeZone', 'Videos', 'Webpages')
 
-    def __init__(self):
-        self.query_vals = OrderedDict()
-        self.query_type = None
-
-    def web_params(self, param_dict):
-        self.query_type = 'web'
-        for param in constants.BASE_QUERY_PARAMS[2:]:
-            self.query_vals[param] = param_dict[param]
-
-
-    def check_web_params(self, header_dict):
-
-        self.responseFilters = ('Computation', 'Images', 'News', 'RelatedSearches', 'SpellSuggestions', 'TimeZone', 'Videos', 'Webpages')
-
-        if self.query_vals['cc']:
-            if self.query_vals['cc'] and not header_dict['Accept-Language']:
+        if 'cc' in query_dict.keys():
+            if query_dict['cc'] and not header_dict['Accept-Language']:
                 raise AssertionError('Attempt to use country-code without specifying language.')
-            if self.query_vals['mkt']:
+            if query_dict['mkt']:
                 raise ReferenceError('cc and mkt cannot be specified simultaneously')
-        if self.query_vals['count']:
-            if int(self.query_vals['count']) >= 51 or int(self.query_vals['count']) < 0:
+        if 'count' in query_dict.keys():
+            if int(query_dict['count']) >= 51 or int(query_dict['count']) < 0:
                 raise ValueError('Count specified out of range. 50 max objects returned.')
-        if self.query_vals['freshness']:
-            if self.query_vals['freshness'] not in ('Day', 'Week', 'Month'):
+        if 'freshness' in query_dict.keys():
+            if query_dict['freshness'] not in ('Day', 'Week', 'Month'):
                 raise ValueError('Freshness must be == Day, Week, or Month. Assume Case-Sensitive.')
-        if self.query_vals['offset']:
-            if int(self.query_vals['offset']) < 0:
+        if 'offset' in query_dict.keys():
+            if int(query_dict['offset']) < 0:
                 raise ValueError('Offset cannot be negative.')
-        if self.query_vals['responseFilter']:
-            if self.query_vals['responseFilter'] not in self.responseFilters:
+        if 'responseFilter' in query_dict.keys():
+            if query_dict['responseFilter'] not in responseFilters:
                 raise ValueError('Improper response filter.')
-        if self.query_vals['safeSearch']:
-            if self.query_vals['safeSearch'] not in ('Off', 'Moderate', 'Strict'):
+        if 'safeSearch' in query_dict.keys():
+            if query_dict['safeSearch'] not in ('Off', 'Moderate', 'Strict'):
                 raise ValueError('safeSearch setting must be Off, Moderate, or Strict. Assume Case-Sensitive.')
-            if header_dict['X-Search-ClientIP']:
+            if 'X-Search-ClientIP' in query_dict.keys():
                 raw_input('You have specified both an X-Search-ClientIP header and safesearch setting\nplease note: header takes precedence')
-        if self.query_vals['setLang']:
+        if 'setLang' in query_dict.keys():
             if header_dict['Accept-Language']:
                 raise AssertionError('Attempt to use both language header and query param.')
-        if self.query_vals['textDecorations']:
-            if self.query_vals['textDecorations'].lower() not in ('true', 'false'):
+        if 'textDecorations' in query_dict.keys():
+            if query_dict['textDecorations'].lower() not in ('true', 'false'):
                 raise TypeError('textDecorations is type bool')
-        if self.query_vals['textFormat']:
-            if self.query_vals['textFormat'] not in ('Raw', 'HTML'):
+        if 'textFormat' in query_dict.keys():
+            if query_dict['textFormat'] not in ('Raw', 'HTML'):
                 raise ValueError('textFormat must be == Raw or HTML. Assume Case-Sensitive.')
         return True
 
@@ -218,24 +245,29 @@ class BingWebSearch(BingSearch):
     Other defaults will specify you as a firefox user, add no addtnl query params, and will give you the max of 50 results returned for your query
     Currently no support for paging, but functionality is in the works.
     """
-    def __init__(self, api_key, query, safe=False, header_dict=constants.HEADERS, addtnl_params=None):
+    def __init__(self, api_key, query, safe=False, header_dict=constants.HEADERS, addtnl_params=constants.INCLUDED_PARAMS):
         self.QUERY_URL = constants.WEBSEARCH_ENDPOINT + '{}'
         self.param_dict = OrderedDict()
 
-        if addtnl_params and type(addtnl_params) == dict:
-            for rec in addtnl_params.keys():
-                if rec in constants.BASE_QUERY_PARAMS[2:]:
-                    self.param_dict[rec] = addtnl_params[rec]
+        if addtnl_params and type(addtnl_params) == OrderedDict:
+            for key, value in addtnl_params.items():
+                if value == None:
+                    pass
+                elif key in constants.BASE_QUERY_PARAMS[2:]:
+                    self.param_dict[key] = addtnl_params[key]
         elif not addtnl_params:
             pass
         else: raise TypeError('Additional params must be in dictionary-format: {param_name : param_val}')
-        # take base search endpoint and add specified addtnl params (if any)
+        ## Build header inside inherited BingSearch class.
         BingSearch.__init__(self, api_key=api_key, query=query, safe=safe, header_dict=header_dict )
 
-        ## ADD QUERY PARAMETER ENTRY AND CHECKING.
-        ##
-
-        print 'run <instance>.search() to run query and print json returned'
+        ## Run query validations
+        is_ok = QueryChecker.check_web_params(self.param_dict, self.header)
+        if is_ok:
+            print 'Query params passed validation. URL will be built.'
+            self._build_url()
+        else: raise AttributeError('query checker has a bug')
+        print 'run <instance>.search() to run query and print json returned\ncurrent URL format is {}'.format(self.QUERY_URL)
 
 
     def _search(self, limit, override=False, newquery=None):
