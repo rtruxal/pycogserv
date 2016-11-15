@@ -8,6 +8,7 @@ from collections import OrderedDict
 Massive swaths of this v5 API interface were graciously stolen from py-bing-search
 you can find it here: https://github.com/tristantao/py-bing-search
 
+for cc and mkt params, see https://msdn.microsoft.com/en-us/library/dn783426.aspx
 
 I AM NOT A PROFESSIONAL PROGRAMMER AND JUST STARTING THIS.
 PLEASE HELP ME MAKE THIS NOT AWFUL!
@@ -38,6 +39,7 @@ class constants(object):
     # HEADERS['Accept-Language'] = None
     # HEADERS['X-Search-Location'] = None
 
+    ## BASE_QUERY_PARAMS[0] & [1] are special! Don't move them!
     BASE_QUERY_PARAMS = (
         'search?q', # <-- if you change this to 'images/search?q' or 'news/search?q' it will change ze behavior much like repsonsefileter
         'category',  # <--news only
@@ -92,6 +94,7 @@ class BingSearch(object):
             self.header['Ocp-Apim-Subscription-Key'] = api_key
         else:
             self.header = self.manual_header_entry()
+
 
     def search(self, limit=50):
         """
@@ -157,6 +160,56 @@ class BingSearch(object):
                 continue
 
 
+class QueryBuilder():
+
+
+    def __init__(self):
+        self.query_vals = OrderedDict()
+        self.query_type = None
+
+    def web_params(self, param_dict):
+        self.query_type = 'web'
+        for param in constants.BASE_QUERY_PARAMS[2:]:
+            self.query_vals[param] = param_dict[param]
+
+
+    def check_web_params(self, header_dict):
+
+        self.responseFilters = ('Computation', 'Images', 'News', 'RelatedSearches', 'SpellSuggestions', 'TimeZone', 'Videos', 'Webpages')
+
+        if self.query_vals['cc']:
+            if self.query_vals['cc'] and not header_dict['Accept-Language']:
+                raise AssertionError('Attempt to use country-code without specifying language.')
+            if self.query_vals['mkt']:
+                raise ReferenceError('cc and mkt cannot be specified simultaneously')
+        if self.query_vals['count']:
+            if int(self.query_vals['count']) >= 51 or int(self.query_vals['count']) < 0:
+                raise ValueError('Count specified out of range. 50 max objects returned.')
+        if self.query_vals['freshness']:
+            if self.query_vals['freshness'] not in ('Day', 'Week', 'Month'):
+                raise ValueError('Freshness must be == Day, Week, or Month. Assume Case-Sensitive.')
+        if self.query_vals['offset']:
+            if int(self.query_vals['offset']) < 0:
+                raise ValueError('Offset cannot be negative.')
+        if self.query_vals['responseFilter']:
+            if self.query_vals['responseFilter'] not in self.responseFilters:
+                raise ValueError('Improper response filter.')
+        if self.query_vals['safeSearch']:
+            if self.query_vals['safeSearch'] not in ('Off', 'Moderate', 'Strict'):
+                raise ValueError('safeSearch setting must be Off, Moderate, or Strict. Assume Case-Sensitive.')
+            if header_dict['X-Search-ClientIP']:
+                raw_input('You have specified both an X-Search-ClientIP header and safesearch setting\nplease note: header takes precedence')
+        if self.query_vals['setLang']:
+            if header_dict['Accept-Language']:
+                raise AssertionError('Attempt to use both language header and query param.')
+        if self.query_vals['textDecorations']:
+            if self.query_vals['textDecorations'].lower() not in ('true', 'false'):
+                raise TypeError('textDecorations is type bool')
+        if self.query_vals['textFormat']:
+            if self.query_vals['textFormat'] not in ('Raw', 'HTML'):
+                raise ValueError('textFormat must be == Raw or HTML. Assume Case-Sensitive.')
+        return True
+
 class BingWebSearch(BingSearch):
     """
     Web Search Object.
@@ -171,14 +224,16 @@ class BingWebSearch(BingSearch):
 
         if addtnl_params and type(addtnl_params) == dict:
             for rec in addtnl_params.keys():
-                if rec in constants.BASE_QUERY_PARAMS:
+                if rec in constants.BASE_QUERY_PARAMS[2:]:
                     self.param_dict[rec] = addtnl_params[rec]
         elif not addtnl_params:
             pass
-        else: raise ValueError('Additional params must be in dictionary-format: {param : str}')
+        else: raise TypeError('Additional params must be in dictionary-format: {param_name : param_val}')
         # take base search endpoint and add specified addtnl params (if any)
         BingSearch.__init__(self, api_key=api_key, query=query, safe=safe, header_dict=header_dict )
-        #
+
+        ## ADD QUERY PARAMETER ENTRY AND CHECKING.
+
         print 'run <instance>.search() to run query and print json returned'
 
 
@@ -191,12 +246,14 @@ class BingWebSearch(BingSearch):
         :return json_results: JSON returned from Microsoft.
         """
         url = self._insert_web_search_query(override=override, newquery=newquery)
+        if len(url) > 1500:
+            raise ValueError('URL too long. Limit URLs to < 1,200 chars.')
         r = requests.get(url, headers=self.header)
         json_results = r.json()
         """
         AS OF NOW I NEED TO PARSE THE JSON RESULTS.
         """
-        return json_results
+        return url, json_results
         # packaged_results = [WebResult(single_result_json) for single_result_json in json_results['d']['results']]
         # self.current_offset += min(50, limit, len(packaged_results))
         # return packaged_results
