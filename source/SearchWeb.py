@@ -233,6 +233,7 @@ class BingWebSearch(BingSearch):
         BingSearch.__init__(self, api_key=api_key, query=query, safe=safe, header_dict=header_dict )
 
         ## ADD QUERY PARAMETER ENTRY AND CHECKING.
+        ##
 
         print 'run <instance>.search() to run query and print json returned'
 
