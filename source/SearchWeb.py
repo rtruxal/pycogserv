@@ -1,9 +1,8 @@
-import requests
-from fake_useragent import UserAgent as UA
-from socket import gethostname, gethostbyname
 from collections import OrderedDict
-# from requests import utils
-# import time
+from socket import gethostname, gethostbyname
+import requests
+from source.constants import user_constants, static_constants
+
 """
 Massive swaths of this v5 API interface were graciously stolen from py-bing-search
 you can find it here: https://github.com/tristantao/py-bing-search
@@ -27,103 +26,18 @@ TODO:
 """
 
 
-
-class constants(object):
-    """
-    Change these to fit your use-case.
-    They can also be accessed and changed on the fly from REPL.
-
-    The top section of this class is modifiable for configuration
-
-    The bottom section is not.
-
-    """
-    user_agent = UA()
-    HEADERS = OrderedDict()
-    INCLUDED_PARAMS = OrderedDict()
-
-    ###############################################
-    ## Enter default-header customizations here. ##
-    ###############################################
-    HEADERS['Ocp-Apim-Subscription-Key'] = None
-    HEADERS['User-Agent'] = user_agent.firefox
-    HEADERS['X-Search-ClientIP'] = gethostbyname(gethostname())
-    HEADERS['X-MSEdge-ClientID']= None
-    HEADERS['Accept'] = None
-    HEADERS['Accept-Language'] = None
-    HEADERS['X-Search-Location'] = None
-
-    ###############################################
-    ##     Enter query customizations here.      ##
-    ###############################################
-    ## Web Params:
-    INCLUDED_PARAMS['cc'] = None              # <--(See https://msdn.microsoft.com/en-us/library/dn783426.aspx#countrycodes)
-    INCLUDED_PARAMS['count'] = None           # <--(Enter a number from 0-50. Must by type==str. EX: count of 5 should be "5")
-    INCLUDED_PARAMS['freshness'] = None       # <--(Poss values are 'Day', 'Week', or 'Month')
-    INCLUDED_PARAMS['mkt'] = None             # <--(See https://msdn.microsoft.com/en-us/library/dn783426.aspx)
-    INCLUDED_PARAMS['offset'] = None          # <--(Use this in conjunction with totalEstimatedMatches and count to page. Same format as 'count')
-    INCLUDED_PARAMS['responseFilter'] = None  # <--(Poss values are 'Computation', 'Images', 'News', 'RelatedSearches', SpellSuggestions', 'TimeZone', 'Videos', or 'Webpages')
-    INCLUDED_PARAMS['safeSearch'] = None      # <--(Poss values are 'Off', 'Moderate', and 'Strict.')
-    INCLUDED_PARAMS['setLang'] = None         # <--(See ISO 639-1, 2-letter language codes here: https://www.loc.gov/standards/iso639-2/php/code_list.php)
-    INCLUDED_PARAMS['textDecorations'] = None # <--(Case-insensitive boolean. '(t|T)rue', or '(f|F)alse')
-    INCLUDED_PARAMS['textFormat'] = None      # <--(Poss values are 'Raw', and 'HTML.' Default is 'Raw' if left blank.)
-
-
-    ####################################################
-    ## ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !##
-    ##    DO NOT modify ANY of the constants below    ##
-    ## ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !##
-    ####################################################
-
-    ## BASE_QUERY_PARAMS[0] & [1] are special! Don't move them!
-    BASE_QUERY_PARAMS = (
-        'search?q', # <-- if you change this to 'images/search?q' or 'news/search?q' it will change ze behavior much like repsonsefileter
-        'category',  # <--news only
-        'cc',
-        'count',
-        'freshness',
-        'mkt',
-        'offset',
-        'responseFilter',
-        'safeSearch',
-        'setLang',
-        'textDecorations', # <-- bool
-        'textFormat',
-    )
-    SPECIALTY_APIS = {
-        'images' : 'images/',
-        'images_trending' : 'images/trending/', # <-- works only for en-US, en-CA, and en-AU
-        'videos' : 'videos/',
-        'videos_trending' : 'videos/trending/',
-        'videos_details' : 'videos/details/',
-        'news' : 'news/',
-        'news_trending' : 'news/trendingtopics/' # <-- works only for en-US and zh-CN
-    }
-    BASE_ENDPOINT = 'https://api.cognitive.microsoft.com/bing/v5.0/'
-    ## Commented out Endpoint URLs have special format which is not defined by .../search?q=...
-    ## These are not yet supported
-    WEBSEARCH_ENDPOINT = BASE_ENDPOINT + '{}='.format(BASE_QUERY_PARAMS[0])
-    IMAGESEARCH_ENDPOINT = BASE_ENDPOINT + SPECIALTY_APIS['images'] + '{}='.format(BASE_QUERY_PARAMS[0])
-    # IMAGESEARCH_TRENDING_ENDPOINT = BASE_ENDPOINT + SPECIALTY_APIS['images_trending'] + ?????
-    VIDEOSEARCH_ENDPOINT = BASE_ENDPOINT + SPECIALTY_APIS['videos'] +'{}='.format(BASE_QUERY_PARAMS[0])
-    # VIDEOSEARCH_TRENDING_ENDPOINT = BASE_ENDPOINT + SPECIALTY_APIS['videos_trending'] + ?????
-    # VIDEOSEARCH_DETAILS_ENDPOINT = BASE_ENDPOINT + SPECIALTY_APIS['images_details'] + ?????
-    NEWSSEARCH_ENDPOINT = BASE_ENDPOINT + SPECIALTY_APIS['news'] + '{}='.format(BASE_QUERY_PARAMS[0])
-    # NEWSSEARCH_TRENDING_ENDPOINT = BASE_ENDPOINT + SPECIALTY_APIS['news_trending'] + ?????
-
-
 class BingSearch(object):
     """
     Base-Class to elimnate redundancy for the common functionalities that cut across APIs
     """
-    def __init__(self, api_key, query, safe=False, header_dict=constants.HEADERS):
+    def __init__(self, api_key, query, safe=False, header_dict=user_constants.HEADERS):
         self._initial_url_built = False
         self.api_key = api_key
         self.safe = safe
         self.query = query
         self.current_offset = 0
 
-        if header_dict is constants.HEADERS:
+        if header_dict is user_constants.HEADERS:
             self.header = header_dict
             self.header['Ocp-Apim-Subscription-Key'] = api_key
             for key, val in self.header.items():
@@ -208,7 +122,7 @@ class QueryChecker():
 
         if 'cc' in query_dict.keys():
             if query_dict['cc'] and not header_dict['Accept-Language']:
-                raise AssertionError('Attempt to use country-code without specifying language.')
+                raise AssertionError('Attempt to use cc_country-cc_code without specifying language.')
             if query_dict['mkt']:
                 raise ReferenceError('cc and mkt cannot be specified simultaneously')
         if 'count' in query_dict.keys():
@@ -247,15 +161,15 @@ class BingWebSearch(BingSearch):
     Other defaults will specify you as a firefox user, add no addtnl query params, and will give you the max of 50 results returned for your query
     Currently no support for paging, but functionality is in the works.
     """
-    def __init__(self, api_key, query, safe=False, header_dict=constants.HEADERS, addtnl_params=constants.INCLUDED_PARAMS):
-        self.QUERY_URL = constants.WEBSEARCH_ENDPOINT + '{}'
+    def __init__(self, api_key, query, safe=False, header_dict=user_constants.HEADERS, addtnl_params=user_constants.INCLUDED_PARAMS):
+        self.QUERY_URL = static_constants.WEBSEARCH_ENDPOINT + '{}'
         self.param_dict = OrderedDict()
 
         if addtnl_params and type(addtnl_params) == OrderedDict:
             for key, value in addtnl_params.items():
                 if value == None:
                     pass
-                elif key in constants.BASE_QUERY_PARAMS[2:]:
+                elif key in static_constants.BASE_QUERY_PARAMS[2:]:
                     self.param_dict[key] = addtnl_params[key]
         elif not addtnl_params:
             pass
@@ -319,12 +233,12 @@ class WebResult(object):
     !!!!!!COPIED DIRECTLY FROM PY-BING-SEARCH.!!!!!!!!
     !!!!!!CURRENTLY NOT HOOKED UP TO JSON RESULTS!!!!!
 
-    The class represents a SINGLE search result.
-    Each result will come with the following:
+    The class represents a SINGLE search cc_result.
+    Each cc_result will come with the following:
     #For the actual results#
-    title: title of the result
-    url: the url of the result
-    description: description for the result
+    title: title of the cc_result
+    url: the url of the cc_result
+    description: description for the cc_result
     id: bing id for the page
     #Meta info#:
     meta.uri: the search uri for bing
@@ -337,7 +251,7 @@ class WebResult(object):
 
     class _Meta(object):
         '''
-        Holds the meta info for the result.
+        Holds the meta info for the cc_result.
         '''
         def __init__(self, meta):
             self.type = meta['type']
