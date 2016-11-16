@@ -14,7 +14,7 @@ VERSION=0.0.2 | supports Python 2.7
     * `static_constants.COUNTRY_CODES`
     * `static_constants.MARKET_CODES`
     * `static_constants.SPECIALTY_APIS`
-    * `static_constants.BASE_ENDPOINT` as well as the format of the alternative formats of the other `static_constant.XXX_ENDPOINT`s listed.
+    * `static_constants.BASE_ENDPOINT` as well as the alternative formats of the other `static_constant.XXX_ENDPOINT`s listed.
 
  Study the constants page, it will guide you through the decisions you're in charge of making. The tool will take care of their implementation.
 
