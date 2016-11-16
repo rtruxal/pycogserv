@@ -2,16 +2,23 @@
 Intro
 =====
 
-Currently only supports Python 2.7
-
-VERSION=0.0.2
+VERSION=0.0.2 | supports Python 2.7
 
 
-This is an attempt to adapt tristantaos's [py-bing-search] (https://github.com/tristantao/py-bing-search) to Microsoft's new Cognitive Services APIs (aka Bing Search API v5) interface.
-Bing has notified their customers that all APIs with 'datamarket' in their endpoint URL will be deactivated on December 15th 2016.
+####Welcome to the Idiot's guide to the new Bing Web Search API!
+ aka v5 aka "Azure Cognititve Services APIs: Bing Search APIs." What a mouthful! Anyhow, the first file you should check out is `py-cog-serv.source.constants`. Snippits of it are shown in the "Usage" section below.
+ 
+ You'll notice that `constants.py` has two classes included in it: `user_constants` and `static_constants`. 
+ * `user_constants` gives access to the default headers and query-modifiers used when a `BingWebSearch` object is instantiated.
+ * `static_constants` can be used as reference. Check out:
+    * `static_constants.COUNTRY_CODES`
+    * `static_constants.MARKET_CODES`
+    * `static_constants.SPECIALTY_APIS`
+    * `static_constants.BASE_ENDPOINT` as well as the format of the alternative formats of the other `static_constant.XXX_ENDPOINT`s listed.
 
-As of now, this tool supports only basic web-search and basic query params detailed in source.SearchWeb.constants
-Contributions are welcome and needed!
+ Study the constants page, it will guide you through the decisions you're in charge of making. The tool will take care of their implementation.
+
+ As of now, this tool supports only basic web-search. Contributions are welcome and needed!
 
 
 Installation
@@ -31,7 +38,7 @@ Usage
 
 Remember to set the `api_key` as your own.
 
-Do **NOT** enter your `api_key` into the header in step 1. It must be passed manually to the constructor in step 2.
+Do **NOT** enter your key into the header in step 1. It must be passed manually to the constructor in step 2.
 
 ####Step 1: Customize Headers & Optional Query Params
 From `source.constants.user_constants`:
