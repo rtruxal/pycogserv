@@ -29,6 +29,7 @@ Usage
  * `static_constants` can be used as reference. Check out:
     * `static_constants.COUNTRY_CODES`
     * `static_constants.MARKET_CODES`
+    * `static_constants.ERROR_CODES`
     * `static_constants.SPECIALTY_APIS`
     * `static_constants.BASE_ENDPOINT` as well as the alternative formats of the other `static_constant.XXX_ENDPOINT`s listed.
 
@@ -80,7 +81,7 @@ Notes
 =====
 
 2016-11-15: Added support & checking-mechanism for web-search query parameters
-
+2016-11-18: Added separate modules for Universal constants and validators.
 
 Massive swaths of this v5 API interface were graciously stolen from py-bing-search which you can find here: https://github.com/tristantao/py-bing-search
 
@@ -94,11 +95,10 @@ TODO
 =====
 * Parse the return JSON!...like any of it! just do something it's a mess!
 * Add image/news/video classes w/ support for API-specific querying
-    * Base Endpoint URLs for these are partially built in class "constants"
 * Fix query params-checking. **FINISHED-(ALPHA)**
 * Parse queries into URLs better. **FINISHED-(ALPHA)**
     * Use requests.utils.quote or some-such to encode things properly.
-* Set up error handling for query/second errors. Use time.sleep(1).
+* Set up error handling for query/second errors. Use time.sleep(1). **FINISHED-(ALPHA)**
 * Implement paging with self.current_offset.
 * Ensure Python3 compatibility w/ try: except: statement for manual header entry.
     * (Currently using `raw_input`)
