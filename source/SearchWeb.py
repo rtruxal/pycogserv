@@ -1,7 +1,9 @@
 from collections import OrderedDict
 from socket import gethostname, gethostbyname
+from time import sleep
 import requests
-from source.constants import user_constants, static_constants
+from constants import user_constants, static_constants
+from validations import QueryChecker, ResponseChecker
 
 """
 Massive swaths of this v5 API interface were graciously stolen from py-bing-search
@@ -110,49 +112,6 @@ class BingSearch(object):
                 continue
 
 
-class QueryChecker():
-    """
-    Isolated human-error-checker class.
-    All methods are static and do not modify state.
-    if/else mess below forgoes optimization in favor of clarity.
-    """
-    @staticmethod
-    def check_web_params(query_dict, header_dict):
-        responseFilters = ('Computation', 'Images', 'News', 'RelatedSearches', 'SpellSuggestions', 'TimeZone', 'Videos', 'Webpages')
-
-        if 'cc' in query_dict.keys():
-            if query_dict['cc'] and not header_dict['Accept-Language']:
-                raise AssertionError('Attempt to use cc_country-cc_code without specifying language.')
-            if query_dict['mkt']:
-                raise ReferenceError('cc and mkt cannot be specified simultaneously')
-        if 'count' in query_dict.keys():
-            if int(query_dict['count']) >= 51 or int(query_dict['count']) < 0:
-                raise ValueError('Count specified out of range. 50 max objects returned.')
-        if 'freshness' in query_dict.keys():
-            if query_dict['freshness'] not in ('Day', 'Week', 'Month'):
-                raise ValueError('Freshness must be == Day, Week, or Month. Assume Case-Sensitive.')
-        if 'offset' in query_dict.keys():
-            if int(query_dict['offset']) < 0:
-                raise ValueError('Offset cannot be negative.')
-        if 'responseFilter' in query_dict.keys():
-            if query_dict['responseFilter'] not in responseFilters:
-                raise ValueError('Improper response filter.')
-        if 'safeSearch' in query_dict.keys():
-            if query_dict['safeSearch'] not in ('Off', 'Moderate', 'Strict'):
-                raise ValueError('safeSearch setting must be Off, Moderate, or Strict. Assume Case-Sensitive.')
-            if 'X-Search-ClientIP' in query_dict.keys():
-                raw_input('You have specified both an X-Search-ClientIP header and safesearch setting\nplease note: header takes precedence')
-        if 'setLang' in query_dict.keys():
-            if header_dict['Accept-Language']:
-                raise AssertionError('Attempt to use both language header and query param.')
-        if 'textDecorations' in query_dict.keys():
-            if query_dict['textDecorations'].lower() not in ('true', 'false'):
-                raise TypeError('textDecorations is type bool')
-        if 'textFormat' in query_dict.keys():
-            if query_dict['textFormat'] not in ('Raw', 'HTML'):
-                raise ValueError('textFormat must be == Raw or HTML. Assume Case-Sensitive.')
-        return True
-
 class BingWebSearch(BingSearch):
     """
     Web Search Object.
@@ -202,16 +161,37 @@ class BingWebSearch(BingSearch):
         url = self._insert_web_search_query(override=override, newquery=newquery)
         if len(url) > 1500:
             raise ValueError('URL too long. Limit URLs to < 1,200 chars.')
-        r = requests.get(url, headers=self.header)
-        json_results = r.json()
-        """
-        AS OF NOW I NEED TO PARSE THE JSON RESULTS.
-        """
-        return json_results
+        response_object = requests.get(url, headers=self.header)
+        response_validated = ResponseChecker.validate_request_response(response_object)
+        if response_validated == '429':
+            response_object = self.handle_429_error(url=url)
+        else: pass
+
+        if 'textFormat' in self.param_dict.keys():
+            if self.param_dict['textFormat'].upper() == 'HTML':
+                response_data = response_object.text()
+            else: response_data = response_object.json()
+        else: response_data = response_object.json()
+
+        return response_data
         # packaged_results = [WebResult(single_result_json) for single_result_json in json_results['d']['results']]
         # self.current_offset += min(50, limit, len(packaged_results))
         # return packaged_results
 
+    def handle_429_error(self, url):
+        timeout_cnt = 0
+        while True:
+            if timeout_cnt < 5:
+                sleep(2)
+                r2 = requests.get(url, self.header)
+                if ResponseChecker.validate_request_response(r2) == '429':
+                    timeout_cnt += 1
+                    pass
+                elif r2.status_code == 200: break
+                else: raise AssertionError('response not successful')
+            else:
+                raise IOError(static_constants.ERROR_CODES['429'])
+        return r2
 
     def _insert_web_search_query(self, override=False, newquery=None):
         """

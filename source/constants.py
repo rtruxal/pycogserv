@@ -169,6 +169,21 @@ class static_constants():
         'United States-Spanish': 'es-US'
     }
 
+    ####################################################
+    ##   Various error codes and their descriptions   ##
+    ####################################################
+    ERROR_CODES = {
+        '200' : 'The call succeeded',
+        '400' : 'One of the query parameters is missing or not valid',
+        '401' : 'The subscription key is missing or not valid',
+        '403' : "The user is authenticated but doesn't have permission to the requested resource. Bing may also return this status if the caller exceeded their queries per month quota",
+        '410' : 'The request was made using HTTP. Only HTTPS is supported.(BASE_ENDPOINT USES HTTPS. EITHER YOU CHANGED THAT OR YOU ARE NOT AT FAULT)',
+        '429' : 'The user exceeded their queries per second quota',
+    }
+
+    ####################################################
+    ##      These are for adding to the base url      ##
+    ####################################################
     SPECIALTY_APIS = {
         'images': 'images/',
         'images_trending': 'images/trending/',  # <-- works only for mkt= en-US, en-CA, and en-AU
@@ -179,7 +194,11 @@ class static_constants():
         'news_trending': 'news/trendingtopics/'  # <-- works only for en-US and zh-CN
     }
 
-    ## This is the basis for all endpoint permutations available for Bing Search APIs through Azure Cognitive Services
+    #####################################################
+    ## This is the basis for all endpoint permutations ##
+    ##  available for Bing Search APIs through Azure   ##
+    ##             Cognitive Services                  ##
+    #####################################################
     BASE_ENDPOINT = 'https://api.cognitive.microsoft.com/bing/v5.0/'
 
     ## Commented out Endpoint URLs have special format which is not defined by .../search?q=...

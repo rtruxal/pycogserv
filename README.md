@@ -5,20 +5,9 @@ Intro
 VERSION=0.0.2 | supports Python 2.7
 
 
-####Welcome to the Idiot's guide to the new Bing Web Search API!
- aka v5 aka "Azure Cognititve Services APIs: Bing Search APIs." What a mouthful! Anyhow, the first file you should check out is `py-cog-serv.source.constants`. Snippits of it are shown in the "Usage" section below.
+####An Overly Explanatory Intro to Cognitive Services aka Bing Search API v5
  
- You'll notice that `constants.py` has two classes included in it: `user_constants` and `static_constants`. 
- * `user_constants` gives access to the default headers and query-modifiers used when a `BingWebSearch` object is instantiated.
- * `static_constants` can be used as reference. Check out:
-    * `static_constants.COUNTRY_CODES`
-    * `static_constants.MARKET_CODES`
-    * `static_constants.SPECIALTY_APIS`
-    * `static_constants.BASE_ENDPOINT` as well as the alternative formats of the other `static_constant.XXX_ENDPOINT`s listed.
-
- Study the constants page, it will guide you through the decisions you're in charge of making. The tool will take care of their implementation.
-
- As of now, this tool supports only basic web-search. Contributions are welcome and needed!
+ This code has been designed as a teaching tool. Where applicable, efficiency has been sacrificed to make functionality clear. The first file you should check out is `py-cog-serv.source.constants`. Snippits of it are shown in the "Usage" section below. As of now, this tool supports only basic web-search. Contributions are welcome and needed!
 
 
 Installation
@@ -32,15 +21,19 @@ The following assumes your current working directory is `.../PATH/TO/py-cog-serv
 ```
 
 
-
 Usage
 =====
-
-Remember to set the `api_key` as your own.
-
-Do **NOT** enter your key into the header in step 1. It must be passed manually to the constructor in step 2.
-
 ####Step 1: Customize Headers & Optional Query Params
+ You'll notice that `constants.py` has two classes included in it: `user_constants` and `static_constants`. 
+ * `user_constants` gives access to the default headers and query-modifiers used when a `BingWebSearch` object is instantiated.
+ * `static_constants` can be used as reference. Check out:
+    * `static_constants.COUNTRY_CODES`
+    * `static_constants.MARKET_CODES`
+    * `static_constants.SPECIALTY_APIS`
+    * `static_constants.BASE_ENDPOINT` as well as the alternative formats of the other `static_constant.XXX_ENDPOINT`s listed.
+
+Study the constants page, it will guide you through the decisions you're in charge of making. The tool will take care of their implementation. Do **NOT** enter your key into the header in step 1. It must be passed manually to the constructor in step 2.
+ 
 From `source.constants.user_constants`:
 ```py
     ###############################################
@@ -80,6 +73,7 @@ From `source.constants.user_constants`:
 >>> return_json = web_searcher.search(limit=50) 
 >>> # 50 is the maximum number results returned per query. Pagination is in the works.
 ```
+
 
 
 Notes
