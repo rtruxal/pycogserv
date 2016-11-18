@@ -51,16 +51,16 @@ From `source.constants.user_constants`:
     ##     Enter query customizations here.      ##
     ###############################################
     ## Web Params:
-    INCLUDED_PARAMS['cc'] = None  # <--(See static_constants.COUNTRY_CODES below for available options)
-    INCLUDED_PARAMS['count'] = None  # <--(Enter a number from 0-50. Must by type==str. EX: count of 5 should be "5")
-    INCLUDED_PARAMS['freshness'] = None  # <--(Poss values are 'Day', 'Week', or 'Month')
-    INCLUDED_PARAMS['mkt'] = None  # <--(See static_constants.MARKET_CODES below for available options)
-    INCLUDED_PARAMS['offset'] = None  # <--(Use this in conjunction with totalEstimatedMatches and count to page. Same format as 'count')
-    INCLUDED_PARAMS['responseFilter'] = None  # <--(Poss values are 'Computation', 'Images', 'News', 'RelatedSearches', SpellSuggestions', 'TimeZone', 'Videos', or 'Webpages')
-    INCLUDED_PARAMS['safeSearch'] = None  # <--(Poss values are 'Off', 'Moderate', and 'Strict.')
-    INCLUDED_PARAMS['setLang'] = None  # <--(See ISO 639-1, 2-letter language codes here: https://www.loc.gov/standards/iso639-2/php/code_list.php)
+    INCLUDED_PARAMS['cc'] = None               # <--(See static_constants.COUNTRY_CODES below for available options)
+    INCLUDED_PARAMS['count'] = None            # <--(Enter a number from 0-50. Must by type==str. EX: count of 5 should be "5")
+    INCLUDED_PARAMS['freshness'] = None        # <--(Poss values are 'Day', 'Week', or 'Month')
+    INCLUDED_PARAMS['mkt'] = None              # <--(See static_constants.MARKET_CODES below for available options)
+    INCLUDED_PARAMS['offset'] = None           # <--(Use this in conjunction with totalEstimatedMatches and count to page. Same format as 'count')
+    INCLUDED_PARAMS['responseFilter'] = None   # <--(Poss values are 'Computation', 'Images', 'News', 'RelatedSearches', SpellSuggestions', 'TimeZone', 'Videos', or 'Webpages')
+    INCLUDED_PARAMS['safeSearch'] = None       # <--(Poss values are 'Off', 'Moderate', and 'Strict.')
+    INCLUDED_PARAMS['setLang'] = None          # <--(See ISO 639-1, 2-letter language codes here: https://www.loc.gov/standards/iso639-2/php/code_list.php)
     INCLUDED_PARAMS['textDecorations'] = None  # <--(Case-insensitive boolean. '(t|T)rue', or '(f|F)alse')
-    INCLUDED_PARAMS['textFormat'] = None  # <--(Poss values are 'Raw', and 'HTML.' Default is 'Raw' if left blank.)
+    INCLUDED_PARAMS['textFormat'] = None       # <--(Poss values are 'Raw', and 'HTML.' Default is 'Raw' if left blank.)
 ```
 
 

@@ -4,7 +4,6 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/py-cog-serv.iml" filepath="$PROJECT_DIR$/.idea/py-cog-serv.iml" />
       <module fileurl="file://$PROJECT_DIR$/../github_projects/py-ms-cognitive/.idea/py-ms-cognitive.iml" filepath="$PROJECT_DIR$/../github_projects/py-ms-cognitive/.idea/py-ms-cognitive.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../github_projects/py-ms-cognitive/.idea/py-ms-cognitive.iml" filepath="$PROJECT_DIR$/../github_projects/py-ms-cognitive/.idea/py-ms-cognitive.iml" />
     </modules>
   </component>
 </project>
