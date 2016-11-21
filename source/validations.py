@@ -62,6 +62,7 @@ class ResponseChecker():
                 return '429'
             elif str(response.status_code) in static_constants.ERROR_CODES.keys():
                 raise AssertionError(static_constants.ERROR_CODES[str(response.status_code)])
-            else: raise ReferenceError('unknown status code returned')
+            else:
+                raise ReferenceError('unknown status code returned: {}\nurl string is: {}'.format(response.status_code, response.url))
         else: return True
 

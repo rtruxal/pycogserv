@@ -1,7 +1,7 @@
 from _socket import gethostbyname, gethostname
-from collections import OrderedDict
-
 from fake_useragent import UserAgent as UA
+from dict_mod import OrderedDictWithPrepend
+
 
 
 class user_constants():
@@ -20,8 +20,8 @@ class user_constants():
     ##              DON'T TOUCH                  ##
     ###############################################
     user_agent = UA()
-    HEADERS = OrderedDict()
-    INCLUDED_PARAMS = OrderedDict()
+    HEADERS = OrderedDictWithPrepend()
+    INCLUDED_PARAMS = OrderedDictWithPrepend()
 
     ###############################################
     ## Enter default-header customizations here. ##
@@ -66,7 +66,7 @@ class static_constants():
     ##    BASE_QUERY_PARAMS[0] & [1] are special!     ##
     ####################################################
     BASE_QUERY_PARAMS = (
-        'search?q',  # <-- if you change this to 'images/search?q' or 'news/search?q' it will change ze behavior much like repsonsefileter
+        'q',  # <-- if you change this to 'images/search?q' or 'news/search?q' it will change ze behavior much like repsonsefileter
         'category',  # <--news only
         'cc',
         'count',
@@ -177,6 +177,7 @@ class static_constants():
         '400' : 'One of the query parameters is missing or not valid',
         '401' : 'The subscription key is missing or not valid',
         '403' : "The user is authenticated but doesn't have permission to the requested resource. Bing may also return this status if the caller exceeded their queries per month quota",
+        '404' : 'Page not found: Bing should not be throwing this error. There is likely a fundamental problem with the structure of your query URL.',
         '410' : 'The request was made using HTTP. Only HTTPS is supported.(BASE_ENDPOINT USES HTTPS. EITHER YOU CHANGED THAT OR YOU ARE NOT AT FAULT)',
         '429' : 'The user exceeded their queries per second quota',
     }
@@ -203,14 +204,11 @@ class static_constants():
 
     ## Commented out Endpoint URLs have special format which is not defined by .../search?q=...
     ## These are not yet supported.
-    WEBSEARCH_ENDPOINT = BASE_ENDPOINT + '{}='.format(BASE_QUERY_PARAMS[0])
-    IMAGESEARCH_ENDPOINT = BASE_ENDPOINT + SPECIALTY_APIS['images'] + '{}='.format(BASE_QUERY_PARAMS[0])
+    WEBSEARCH_ENDPOINT = BASE_ENDPOINT + 'search?'
+    IMAGESEARCH_ENDPOINT = BASE_ENDPOINT + SPECIALTY_APIS['images'] + 'search?'
     # IMAGESEARCH_TRENDING_ENDPOINT = BASE_ENDPOINT + SPECIALTY_APIS['images_trending'] + ?????
-    VIDEOSEARCH_ENDPOINT = BASE_ENDPOINT + SPECIALTY_APIS['videos'] + '{}='.format(BASE_QUERY_PARAMS[0])
+    VIDEOSEARCH_ENDPOINT = BASE_ENDPOINT + SPECIALTY_APIS['videos'] + 'search?'
     # VIDEOSEARCH_TRENDING_ENDPOINT = BASE_ENDPOINT + SPECIALTY_APIS['videos_trending'] + ?????
     # VIDEOSEARCH_DETAILS_ENDPOINT = BASE_ENDPOINT + SPECIALTY_APIS['images_details'] + ?????
-    NEWSSEARCH_ENDPOINT = BASE_ENDPOINT + SPECIALTY_APIS['news'] + '{}='.format(BASE_QUERY_PARAMS[0])
+    NEWSSEARCH_ENDPOINT = BASE_ENDPOINT + SPECIALTY_APIS['news'] + 'search?'
     # NEWSSEARCH_TRENDING_ENDPOINT = BASE_ENDPOINT + SPECIALTY_APIS['news_trending'] + ?????
-
-
-
