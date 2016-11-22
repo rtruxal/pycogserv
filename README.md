@@ -2,7 +2,7 @@
 Intro
 =====
 
-VERSION=0.0.2 | supports Python 2.7
+VERSION=0.0.3 | supports Python 2.7
 
 
 ####An Overly Explanatory Intro to Cognitive Services aka Bing Search API v5
@@ -26,16 +26,8 @@ True
 Usage
 =====
 ####Step 1: Customize Headers & Optional Query Params
- You'll notice that `constants.py` has two classes included in it: `user_constants` and `static_constants`. 
- * `user_constants` gives access to the default headers and query-modifiers used when a `BingWebSearch` object is instantiated.
- * `static_constants` can be used as reference. Check out:
-    * `static_constants.COUNTRY_CODES`
-    * `static_constants.MARKET_CODES`
-    * `static_constants.ERROR_CODES`
-    * `static_constants.SPECIALTY_APIS`
-    * `static_constants.BASE_ENDPOINT` as well as the alternative formats of the other `static_constant.XXX_ENDPOINT`s listed.
 
-Study the constants page, it will guide you through the decisions you're in charge of making. The tool will take care of their implementation. Keep in mind the API-key must be passed manually to the constructor in step 2.
+Study constants.py, it will guide you through the decisions you're in charge of making. The tool will take care of their implementation. Keep in mind the API-key must be passed manually to the constructor in step 2.
  
 From `source.constants.user_constants`:
 ```py
@@ -66,15 +58,50 @@ From `source.constants.user_constants`:
     INCLUDED_PARAMS['textFormat'] = None       # <--(Poss values are 'Raw', and 'HTML.' Default is 'Raw' if left blank.)
 ```
 
+ You'll notice that `constants.py` has two classes included in it: `user_constants` and `static_constants`. 
+ * `user_constants` gives access to the default headers and query-modifiers used when a `BingWebSearch` object is instantiated.
+ * `static_constants` can be used as reference. Check out:
+    * `static_constants.COUNTRY_CODES`
+    * `static_constants.MARKET_CODES`
+    * `static_constants.ERROR_CODES`
+    * `static_constants.SPECIALTY_APIS`
+    * `static_constants.BASE_ENDPOINT` as well as the alternative formats of the other `static_constant.XXX_ENDPOINT`s listed.
+
+
 
 ####Step 2: Search For Web Results:
 ```py
->>> from py-cog-serv.source.SearchWeb import BingWebSearch
+>>> from source.SearchWeb import BingWebSearch
+
 >>> search_query = "ENTER YOUR ARBITRARY SEARCH TERMS HERE"
+>>> api_key = "ENTER ONE OF YOUR API KEYS HERE"
+
+>>> # First things first, we instantiate the seach interface object.
 >>> web_searcher = BingWebSearch(api_key=api_key, query=search_query, safe=False, headers=constants.HEADERS, addtnl_params=constants.INCLUDED_PARAMS) 
 >>> # see source.constants.static_constants.BASE_QUERY_PARAMS for compatible params. Must be in {param : value} format
->>> return_json = web_searcher.search(limit=50) 
->>> # 50 is the maximum number results returned per query. Pagination is in the works.
+ 
+>>> # Quickly notice that the web_searcher instance will keep track of your 'offset' value every time you call the .search() method.
+>>> web_searcher.current_offset
+0
+>>> # 0 makes sense. We haven't run .search() yet, and we didn't alter user_constants.INCLUDED_PARAMS['offset'] = None.
+
+>>> # .search() returns a list of WebResult objects. Each WebResult is __repr__'d with its display URL.
+>>> packaged_json = web_searcher.search() 
+
+>>> # The default number of results requested is 50, the maximum # of results Bing will return per query.
+>>> len(packaged_json)
+50
+
+>>> # Let's check the web_searcher's offset value again 
+>>> web_searcher.current_offset
+50
+
+>>> # Now we know that running web_searcher.search() again will return the next 50 results.
+>>> packaged_json_2 = web_searcher.search()
+>>> web_searcher.current_offset
+100
+>>> packaged_json == packaged_json_2
+False
 ```
 
 
@@ -84,23 +111,24 @@ Notes
 
 2016-11-15: Added support & checking-mechanism for web-search query parameters
 2016-11-18: Added separate modules for Universal constants and validators.
+2016-11-22: Added support for paging. Offloaded all URL encoding to requests for congruence.
 
 Massive swaths of this v5 API interface were graciously stolen from py-bing-search which you can find here: https://github.com/tristantao/py-bing-search
 
 
-I AM NOT A PROFESSIONAL PROGRAMMER AND JUST STARTING THIS.
+I AM NOT A PROFESSIONAL DEV AND JUST STARTING THIS.
 
-PLEASE HELP ME MAKE THIS NOT AWFUL.
+PLEASE HELP ME FIX CURRENT IF/ELSE HELL.
 
 
 TODO
 =====
-* Parse the return JSON!...like any of it! just do something it's a mess!
+* Parse the return JSON!...like any of it! just do something it's a mess! **FINISHED-(ALPHA)**
 * Add image/news/video classes w/ support for API-specific querying
 * Fix query params-checking. **FINISHED-(ALPHA)**
 * Parse queries into URLs better. **FINISHED-(ALPHA)**
-    * Use requests.utils.quote or some-such to encode things properly.
+    * Use requests.utils.quote or some-such to encode things properly.**FINISHED-(ALPHA)**
 * Set up error handling for query/second errors. Use time.sleep(1). **FINISHED-(ALPHA)**
-* Implement paging with self.current_offset.
+* Implement paging with self.current_offset. **FINISHED-(ALPHA)**
 * Ensure Python3 compatibility w/ try: except: statement for manual header entry.
     * (Currently using `raw_input`)

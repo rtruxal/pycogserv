@@ -171,7 +171,8 @@ class BingWebSearch(BingSearch):
         try:
             response_object = requests.get(self.BASE_URL, params=self.param_dict, headers=self.header)
         except requests.Timeout:
-            print 'requests module timed out'
+            print 'requests module timed out. Returning NoneType'
+            return None
 
         # Handle error-codes and Preempt garbage results if URL is too long.
         if len(response_object.url) > 1500:
