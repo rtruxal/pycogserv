@@ -72,6 +72,7 @@ From `source.constants.user_constants`:
 ####Step 2: Search For Web Results:
 ```py
 >>> from source.SearchWeb import BingWebSearch
+>>> from source.constants import user_constants, static_constants
 
 >>> search_query = "ENTER YOUR ARBITRARY SEARCH TERMS HERE"
 >>> api_key = "ENTER ONE OF YOUR API KEYS HERE"
@@ -79,7 +80,7 @@ From `source.constants.user_constants`:
 
 First things first, instantiate the seach interface object.
 ```py
->>> web_searcher = BingWebSearch(api_key=api_key, query=search_query, safe=False, headers=constants.HEADERS, addtnl_params=constants.INCLUDED_PARAMS) 
+>>> web_searcher = BingWebSearch(api_key=api_key, query=search_query, safe=False, headers=user_constants.HEADERS, addtnl_params=user_constants.INCLUDED_PARAMS) 
 >>> # see source.constants.static_constants.BASE_QUERY_PARAMS for 
 >>> # compatible params. Must be in {param : value} format
  ```
