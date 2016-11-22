@@ -141,7 +141,7 @@ Now we know that running web_searcher.search() again will return the next 50 res
 False
 ```
 
-For more advanced usage such as computational queries and compount queries, check back soon for guidance or poke at the code.
+For more advanced usage such as computational queries & compound queries, check back soon for guidance or poke at the code.
 
 Notes
 =====
