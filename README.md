@@ -107,11 +107,11 @@ The WebResponse objects will expose the meat & potatoes if you will. Check it ou
 >>> print WebResp1.about
 [{some_key : some_value}]
 >>> print WebResp1.snippet
-blahblah blah blah this is the site description for www.madeupwebsite.com blahblahblahblahhhhhh
+'blahblah blah blah this is the site description for www.madeupwebsite.com blahblahblahblahhhhhh'
 >>> print WebResp1.display_url
-www.madeupwebsite.com
+'www.madeupwebsite.com'
 >>> print WebResp1.id
-https://api.cognitive.microsoft.com/api/v5/#WebPages.0
+'https://api.cognitive.microsoft.com/api/v5/#WebPages.0'
 >>> print WebResp1.name
 madeupwebsite.com the best site in the world ...
 >>> print WebResp1.date_crawled
