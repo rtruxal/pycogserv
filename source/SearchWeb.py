@@ -13,10 +13,9 @@ Modify query params in class 'constants.'
     - You can create your own own query-param-dict as a replacement, but use OrderedDict. 'q' must be the first key at runtime.
     - Dict entries of format "YourDict[key] == None" will be ignored and can therefore be safely included.
 
-PLEASE HELP ME MAKE THIS NOT AWFUL!
+
 
 TODO:
-    - parse the return JSON!...like any of it! just do something it's a mess!
     - Add image/news/video classes w/ support for API-specific querying
         --Base Endpoint URLs for these are partially built in class "constants"
     - implement paging with self.current_offset.
@@ -44,12 +43,12 @@ class BingSearch(object):
         else:
             self.header = self.manual_header_entry()
 
-    def search(self, limit=50):
+    def search(self, limit=50, **kwargs):
         """
         :param limit: number of results to return. max is 50.
         :return json_results: a mess of json right now...in a dictionary.
         """
-        return self._search(limit)
+        return self._search(limit, **kwargs)
 
     def manual_header_entry(self):
         """
@@ -105,6 +104,7 @@ class BingWebSearch(BingSearch):
                  addtnl_params=user_constants.INCLUDED_PARAMS):
         self.QUERY_URL = static_constants.WEBSEARCH_ENDPOINT
         self.param_dict = OrderedDictWithPrepend()
+        self.total_estimated_matches = None
 
         if addtnl_params and type(addtnl_params) == OrderedDictWithPrepend:
             for key, value in addtnl_params.items():
@@ -128,43 +128,56 @@ class BingWebSearch(BingSearch):
         print 'run <instance>.search() to run query and print json returned\ncurrent URL format is {}'.format(
             self.QUERY_URL)
 
-    def _search(self, limit, override=False, newquery=None, return_response_object=False):
+    def _search(self, limit, override=False, newquery=None, return_response_object=False, return_unparsed_json=False):
         """
         Meat-&Potatoes of the search. Inserts search query and makes API call.
         :param limit: Number of return results. Max is 50
         :param override: Set to True if you intend to use 'newquery' to modify the query on the fly
         :param newquery: enter new query value if you so choose. Will not change query params.
-        :return json_results: JSON returned from Microsoft.
+        :return json_results: list of packaged JSON results returned from Microsoft.
+        see WebResult class below.
         """
         self.param_dict.prepend('q', self._insert_web_search_query(override=override, newquery=newquery))
+        self.param_dict['responseFilter'] = 'Webpages'
         if limit > 50 or limit < 1:
             raise ValueError('limit must be positive integer b/w 1 and 50')
-        elif limit != 50:
-            self.param_dict['count'] = limit
+        else:
+            self.param_dict['count'] = str(limit)
 
         response_object = requests.get(self.QUERY_URL, params=self.param_dict, headers=self.header)
 
         if len(response_object.url) > 1500:
             raise ValueError('URL too long. Limit URLs to < 1,200 chars.')
-
         response_validated = ResponseChecker.validate_request_response(response_object)
         if response_validated == '429':
             response_object = self.handle_429_error(url=response_object.url)
         else:
             pass
 
-        if 'textFormat' in self.param_dict.keys():
-            if self.param_dict['textFormat'].upper() == 'HTML':
-                response_data = response_object.text()
-            else:
-                response_data = response_object.json()
-        else:
-            response_data = response_object.json()
-
         if return_response_object:
             return response_object
+        elif 'textFormat' in self.param_dict.keys():
+            if self.param_dict['textFormat'].upper() == 'HTML':
+                print 'returning HTML w/o packaging'
+                return response_object.text()
+        elif return_unparsed_json:
+            return response_object.json()
         else:
-            return response_data
+            return self.parse_json(response_object.json())
+
+
+    def parse_json(self, json_response, reset_estimated_matches=False):
+        if not self.total_estimated_matches:
+            print 'Bing says there are an estimated {} results matching your query'.format(json_response['webPages']['totalEstimatedMatches'])
+            self.total_estimated_matches = json_response['webPages']['totalEstimatedMatches']
+        elif reset_estimated_matches == True:
+            print 'Bing says there are an estimated {} results matching your query'.format(
+                json_response['webPages']['totalEstimatedMatches'])
+            self.total_estimated_matches = json_response['webPages']['totalEstimatedMatches']
+
+        packaged_json = [WebResult(single_json_entry) for single_json_entry in json_response['webPages']['value']]
+
+        return packaged_json
 
 
         # return response_data
@@ -190,12 +203,6 @@ class BingWebSearch(BingSearch):
         return r2
 
     def _insert_web_search_query(self, override=False, newquery=None):
-        """
-        Basic encoding & insertion of search terms. Allows for override via method described in _search() above.
-        :param override: Set to True if you intend to use 'newquery' to modify the query on the fly
-        :param newquery: enter new query value if you so choose. Will not change query params.
-        :return finalized URL: Upon completion of this function, the URL used to call the API will be complete.
-        """
         if override:
             return newquery
         else:
@@ -204,39 +211,27 @@ class BingWebSearch(BingSearch):
 
 class WebResult(object):
     '''
+    Attributes which can be called from WebResult instance(WRi) --
 
-    !!!!!!COPIED DIRECTLY FROM PY-BING-SEARCH.!!!!!!!!
-    !!!!!!CURRENTLY NOT HOOKED UP TO JSON RESULTS!!!!!
-
-    The class represents a SINGLE search cc_result.
-    Each cc_result will come with the following:
-    #For the actual results#
-    title: title of the cc_result
-    url: the url of the cc_result
-    description: description for the cc_result
-    id: bing id for the page
-    #Meta info#:
-    meta.uri: the search uri for bing
-    meta.type: for the most part WebResult
-
-    !!!!!!COPIED DIRECTLY FROM PY-BING-SEARCH.!!!!!!!!
-    !!!!!!CURRENTLY NOT HOOKED UP TO JSON RESULTS!!!!!
-
+    WRi.json: full JSON entry.
+    WRi.url: The URL sent back by Bing.
+    WRi.display_url: Display URL. Not always accurate.
+    WRi.name: The title of the page linked to by WRi.url.
+    WRi.snippet: A snippet of text from the page linked to by WRi.url.
+    WRi.id: the index value for this JSON entry. Used primarily for compound queries.
     '''
 
-    class _Meta(object):
-        '''
-        Holds the meta info for the cc_result.
-        '''
-
-        def __init__(self, meta):
-            self.type = meta['type']
-            self.uri = meta['uri']
-
     def __init__(self, result):
-        self.url = result['Url']
-        self.title = result['Title']
-        self.description = result['Description']
-        self.id = result['ID']
+        self.json = result
+        self.url = result.get('url')
+        self.display_url = result.get('displayUrl')
+        self.name = result.get('name')
+        self.snippet = result.get('snippet')
+        self.id = result.get('id')
 
-        self.meta = self._Meta(result['__metadata'])
+        # maintain compatibility
+        self.title = result.get('name')
+        self.description = result.get('snippet')
+
+    def __repr__(self):
+        return 'WebResponse Obj: {}'.format(self.display_url)
