@@ -114,7 +114,7 @@ https://api.cognitive.microsoft.com/api/v5/#WebPages.0
 >>> print WebResp1.name
 madeupwebsite.com the best site in the world ...
 >>> print WebResp1.date_crawled
-2016-11-21T20:51:00
+2016-11-21 T20:51:00
 >>> print WebResp1.json
 {UNPARSED VERSION OF EVERYTHING ABOVE WILL BE HERE. GOOD FOR DEBUGGING OR HIGH-LEVEL VIEW}
 ```
