@@ -260,7 +260,12 @@ class WebResult(object):
         self.name = result.get('name')
         self.snippet = result.get('snippet')
         self.id = result.get('id')
-
+        try:
+            self.date_crawled = result.get('dateLastCrawled')
+            self.about = result.get('about')
+        except Exception:
+            self.date_crawled = None
+            self.about = None
         # maintain compatibility
         self.title = result.get('name')
         self.description = result.get('snippet')

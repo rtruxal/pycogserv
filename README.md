@@ -75,28 +75,64 @@ From `source.constants.user_constants`:
 
 >>> search_query = "ENTER YOUR ARBITRARY SEARCH TERMS HERE"
 >>> api_key = "ENTER ONE OF YOUR API KEYS HERE"
+```
 
->>> # First things first, we instantiate the seach interface object.
+First things first, instantiate the seach interface object.
+```py
 >>> web_searcher = BingWebSearch(api_key=api_key, query=search_query, safe=False, headers=constants.HEADERS, addtnl_params=constants.INCLUDED_PARAMS) 
->>> # see source.constants.static_constants.BASE_QUERY_PARAMS for compatible params. Must be in {param : value} format
+>>> # see source.constants.static_constants.BASE_QUERY_PARAMS for 
+>>> # compatible params. Must be in {param : value} format
+ ```
  
->>> # Quickly notice that the web_searcher instance will keep track of your 'offset' value every time you call the .search() method.
->>> web_searcher.current_offset
+Quickly notice that the web_searcher instance will keep track of your 'offset' value every time you call the .search() method.
+```py
+>>> print web_searcher.current_offset
 0
->>> # 0 makes sense. We haven't run .search() yet, and we didn't alter user_constants.INCLUDED_PARAMS['offset'] = None.
+>>> # 0 makes sense here. We haven't run .search() yet, and we didn't 
+>>> # alter the "user_constants.INCLUDED_PARAMS['offset'] = None" option above.
+```
 
->>> # .search() returns a list of WebResult objects. Each WebResult is __repr__'d with its display URL.
->>> packaged_json = web_searcher.search() 
+.search() returns a list of WebResult objects. Each WebResult is `__repr__`'d with its display URL.
+```py
+>>> packaged_json = web_searcher.search()
+Bing says there are an estimated OVER 9000!!!! results matching your query
+>>> packaged_json[0]
+WebResponse Obj: www.madeupwebsite.com
+```
 
->>> # The default number of results requested is 50, the maximum # of results Bing will return per query.
+The WebResponse objects will expose the meat & potatoes if you will. Check it out:
+```PY
+>>> WebResp1 = packaged_json[0]
+>>> print WebResp1.about
+[{some_key : some_value}]
+>>> print WebResp1.snippet
+blahblah blah blah this is the site description for www.madeupwebsite.com blahblahblahblahhhhhh
+>>> print WebResp1.display_url
+www.madeupwebsite.com
+>>> print WebResp1.id
+https://api.cognitive.microsoft.com/api/v5/#WebPages.0
+>>> print WebResp1.name
+madeupwebsite.com the best site in the world ...
+>>> print WebResp1.date_crawled
+2016-11-21T20:51:00
+>>> print WebResp1.json
+{UNPARSED VERSION OF EVERYTHING ABOVE WILL BE HERE. GOOD FOR DEBUGGING OR HIGH-LEVEL VIEW}
+```
+
+The default number of results requested is 50, the maximum # of results Bing will return per query.
+```py
 >>> len(packaged_json)
 50
+```
 
->>> # Let's check the web_searcher's offset value again 
+Let's check the web_searcher's offset value again 
+```py
 >>> web_searcher.current_offset
 50
+```
 
->>> # Now we know that running web_searcher.search() again will return the next 50 results.
+Now we know that running web_searcher.search() again will return the next 50 results.
+```py
 >>> packaged_json_2 = web_searcher.search()
 >>> web_searcher.current_offset
 100
@@ -104,7 +140,7 @@ From `source.constants.user_constants`:
 False
 ```
 
-
+For more advanced usage such as computational queries and compount queries, check back soon for guidance or poke at the code.
 
 Notes
 =====
