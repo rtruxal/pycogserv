@@ -118,6 +118,8 @@ madeupwebsite.com the best site in the world ...
 2016-11-21 T20:51:00
 >>> print WebResp1.json
 {UNPARSED VERSION OF EVERYTHING ABOVE WILL BE HERE. GOOD FOR DEBUGGING OR HIGH-LEVEL VIEW}
+>>> print WebResp1.url
+http://www.bing.com/cr?IG4537854378543873458787193244_ARRRRGHGHHHHHHFD2SA4HJ3KLJK4LSDFL<(^_^)>DFS43FJKA43730984%2fwww.madeupwebsite.com%2f&p=DevEx,9999
 ```
 
 The default number of results requested is 50, the maximum # of results Bing will return per query.
