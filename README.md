@@ -72,7 +72,7 @@ From `source.constants.user_constants`:
 ####Step 2: Search For Web Results:
 ```py
 >>> from source.SearchWeb import BingWebSearch
->>> from source.constants import user_constants, static_constants
+>>> from source.constants import user_constants, static_constants #<--Not necessary. Added for clarification
 
 >>> search_query = "ENTER YOUR ARBITRARY SEARCH TERMS HERE"
 >>> api_key = "ENTER ONE OF YOUR API KEYS HERE"
@@ -96,7 +96,7 @@ Quickly notice that the web_searcher instance will keep track of your 'offset' v
 .search() returns a list of WebResult objects. Each WebResult is `__repr__`'d with its display URL.
 ```py
 >>> packaged_json = web_searcher.search()
-Bing says there are an estimated OVER 9000!!!! results matching your query
+'Bing says there are an estimated OVER 9000!!!! results matching your query'
 >>> packaged_json[0]
 WebResponse Obj: www.madeupwebsite.com
 ```
