@@ -4,6 +4,7 @@ import requests
 from dict_mod import OrderedDictWithPrepend
 from constants import user_constants, static_constants
 from validations import QueryChecker, ResponseChecker
+# import pdb
 
 """
 Massive swaths of this v5 API interface were graciously stolen from py-bing-search
@@ -140,15 +141,39 @@ class BingWebSearch(BingSearch):
         :return json_results: list of packaged JSON results returned from Microsoft.
         see WebResult class below.
         """
-        self.param_dict.prepend('q', self._insert_web_search_query(override=override, newquery=newquery))
+
+        # Allow _search to initialize new query.
+        if override and newquery:
+            self.query = newquery
+            self.current_offset = 0
+            self.total_estimated_matches = None
+        elif override and not newquery:
+            raise AssertionError('query override has been activated but you have not specified a new query.')
+
+        # Modify some variable/nonvariable params to enable paging and restrict query to webpages.
+        if 'q' in self.param_dict.keys():
+            if override:
+                del self.param_dict['q']
+                self.param_dict.prepend('q', self._insert_web_search_query(override=override, newquery=newquery))
+            else:
+                print 'keeping {} as search-query value'.format(self.query)
+                pass
+        else:
+            self.param_dict.prepend('q', self._insert_web_search_query(override=override, newquery=newquery))
+        self.param_dict['offset'] = self.current_offset
         self.param_dict['responseFilter'] = 'Webpages'
         if limit > 50 or limit < 1:
             raise ValueError('limit must be positive integer b/w 1 and 50')
         else:
             self.param_dict['count'] = str(limit)
 
-        response_object = requests.get(self.BASE_URL, params=self.param_dict, headers=self.header)
+        # Query the API. Receive response object.
+        try:
+            response_object = requests.get(self.BASE_URL, params=self.param_dict, headers=self.header)
+        except requests.Timeout:
+            print 'requests module timed out'
 
+        # Handle error-codes and Preempt garbage results if URL is too long.
         if len(response_object.url) > 1500:
             raise ValueError('URL too long. Limit URLs to < 1,200 chars.')
         response_validated = ResponseChecker.validate_request_response(response_object)
@@ -157,28 +182,32 @@ class BingWebSearch(BingSearch):
         else:
             pass
 
+        # Return packaged JSON or HTML. Update 'current_offset' and 'last_response...' caches.
         self.last_response = response_object
-        if 'textFormat' in self.param_dict.keys():
+        self.last_url_sent = response_object.url
+        if 'textFormat' in self.param_dict.keys() and self.param_dict['textFormat']:
             if self.param_dict['textFormat'].upper() == 'HTML':
+                self.current_offset += min(50, limit)
                 print 'returning HTML w/o packaging. <instance>.last_response_packaged will remain set to None.'
                 return response_object.text()
         else:
             packaged_json = self.parse_json(response_object.json())
             self.last_response_packaged = packaged_json
+            self.current_offset += min(50, limit, len(packaged_json))
             return packaged_json
 
 
-    def parse_json(self, json_response, reset_estimated_matches=False):
+    def parse_json(self, json_response):
+        """
+        Takes raw JSON response and packages them as instances of class WebResult.
+        :param json_response: EX -- <requests_response_object>.json()
+        :return list of WebResult objects: parsed and prettied JSON results with easy data-access.
+                Returned as a LIST of WebResult objects with len == the # of links returned by Bing.
+        """
         if not self.total_estimated_matches:
             print 'Bing says there are an estimated {} results matching your query'.format(json_response['webPages']['totalEstimatedMatches'])
-            self.total_estimated_matches = json_response['webPages']['totalEstimatedMatches']
-        elif reset_estimated_matches == True:
-            print 'Bing says there are an estimated {} results matching your query'.format(
-                json_response['webPages']['totalEstimatedMatches'])
-            self.total_estimated_matches = json_response['webPages']['totalEstimatedMatches']
-
+            self.total_estimated_matches = int(json_response['webPages']['totalEstimatedMatches'])
         packaged_json = [WebResult(single_json_entry) for single_json_entry in json_response['webPages']['value']]
-
         return packaged_json
 
 
