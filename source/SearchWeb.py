@@ -31,12 +31,17 @@ class BingSearch(object):
         self.api_key = api_key
         self.safe = safe
         self.query = query
+        # Paging-support
         self.current_offset = 0
-        self.last_url_built = None
+        self.total_estimated_matches = None
+        self.last_url_sent = None
+        # Cache last response
+        self.last_response = None
+        self.last_response_packaged = None
 
         if header_dict is user_constants.HEADERS:
             self.header = header_dict
-            self.header['Ocp-Apim-Subscription-Key'] = api_key
+            self.header.prepend('Ocp-Apim-Subscription-Key', api_key)
             for key, val in self.header.items():
                 if val == None:
                     del self.header[key]
@@ -102,16 +107,14 @@ class BingWebSearch(BingSearch):
 
     def __init__(self, api_key, query, safe=False, header_dict=user_constants.HEADERS,
                  addtnl_params=user_constants.INCLUDED_PARAMS):
-        self.QUERY_URL = static_constants.WEBSEARCH_ENDPOINT
-        self.param_dict = OrderedDictWithPrepend()
-        self.total_estimated_matches = None
+        self.BASE_URL = static_constants.WEBSEARCH_ENDPOINT
 
+        self.param_dict = OrderedDictWithPrepend()
         if addtnl_params and type(addtnl_params) == OrderedDictWithPrepend:
             for key, value in addtnl_params.items():
-                if value == None:
-                    pass
-                elif key in static_constants.BASE_QUERY_PARAMS[2:]:
+                if key in static_constants.BASE_QUERY_PARAMS[2:]:
                     self.param_dict[key] = addtnl_params[key]
+                else: raise ValueError('One or more keys in param-dict are not valid params.')
         elif not addtnl_params:
             pass
         else:
@@ -126,9 +129,9 @@ class BingWebSearch(BingSearch):
         else:
             raise AttributeError('query checker has a bug')
         print 'run <instance>.search() to run query and print json returned\ncurrent URL format is {}'.format(
-            self.QUERY_URL)
+            self.BASE_URL)
 
-    def _search(self, limit, override=False, newquery=None, return_response_object=False, return_unparsed_json=False):
+    def _search(self, limit, override=False, newquery=None):
         """
         Meat-&Potatoes of the search. Inserts search query and makes API call.
         :param limit: Number of return results. Max is 50
@@ -144,7 +147,7 @@ class BingWebSearch(BingSearch):
         else:
             self.param_dict['count'] = str(limit)
 
-        response_object = requests.get(self.QUERY_URL, params=self.param_dict, headers=self.header)
+        response_object = requests.get(self.BASE_URL, params=self.param_dict, headers=self.header)
 
         if len(response_object.url) > 1500:
             raise ValueError('URL too long. Limit URLs to < 1,200 chars.')
@@ -154,16 +157,15 @@ class BingWebSearch(BingSearch):
         else:
             pass
 
-        if return_response_object:
-            return response_object
-        elif 'textFormat' in self.param_dict.keys():
+        self.last_response = response_object
+        if 'textFormat' in self.param_dict.keys():
             if self.param_dict['textFormat'].upper() == 'HTML':
-                print 'returning HTML w/o packaging'
+                print 'returning HTML w/o packaging. <instance>.last_response_packaged will remain set to None.'
                 return response_object.text()
-        elif return_unparsed_json:
-            return response_object.json()
         else:
-            return self.parse_json(response_object.json())
+            packaged_json = self.parse_json(response_object.json())
+            self.last_response_packaged = packaged_json
+            return packaged_json
 
 
     def parse_json(self, json_response, reset_estimated_matches=False):

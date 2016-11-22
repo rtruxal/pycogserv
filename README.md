@@ -13,10 +13,12 @@ VERSION=0.0.2 | supports Python 2.7
 Installation
 ============
 This module is not yet packaged. Until then, here is a sample import into REPL.
-The following assumes your current working directory is `.../PATH/TO/py-cog-serv`
+
 ```py
 >>> import os, sys
->>> sys.path.append(os.getcwd())
+>>> os.path.exists(os.path.normpath('/path/to/py-cog-serve/'))
+True
+>>> sys.path.append(os.path.normpath('/path/to/py-cog-serve/'))
 >>> from source.SearchWeb import BingWebSearch
 ```
 
@@ -33,7 +35,7 @@ Usage
     * `static_constants.SPECIALTY_APIS`
     * `static_constants.BASE_ENDPOINT` as well as the alternative formats of the other `static_constant.XXX_ENDPOINT`s listed.
 
-Study the constants page, it will guide you through the decisions you're in charge of making. The tool will take care of their implementation. Do **NOT** enter your key into the header in step 1. It must be passed manually to the constructor in step 2.
+Study the constants page, it will guide you through the decisions you're in charge of making. The tool will take care of their implementation. Keep in mind the API-key must be passed manually to the constructor in step 2.
  
 From `source.constants.user_constants`:
 ```py

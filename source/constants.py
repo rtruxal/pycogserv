@@ -26,7 +26,6 @@ class user_constants():
     ###############################################
     ## Enter default-header customizations here. ##
     ###############################################
-    HEADERS['Ocp-Apim-Subscription-Key'] = None
     HEADERS['User-Agent'] = user_agent.firefox
     HEADERS['X-Search-ClientIP'] = gethostbyname(gethostname())
     HEADERS['X-MSEdge-ClientID'] = None
