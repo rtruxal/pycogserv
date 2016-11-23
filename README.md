@@ -25,7 +25,7 @@ True
 
 Usage
 =====
-####Step 1: Customize Headers & Optional Query Params
+##Step 1: Customize Headers & Optional Query Params
 
 Study constants.py, it will guide you through the decisions you're in charge of making. The tool will take care of their implementation. Keep in mind the API-key must be passed manually to the constructor in step 2.
  
@@ -69,7 +69,8 @@ From `source.constants.user_constants`:
 
 
 
-####Step 2: Search For Web Results:
+
+##Step 2: Search For Web Results:
 ```py
 >>> from source.SearchWeb import BingWebSearch
 >>> from source.constants import user_constants, static_constants #<--Not necessary. Added for clarification
@@ -85,7 +86,7 @@ First things first, instantiate the seach interface object.
 >>> # compatible params. Must be in {param : value} format
  ```
  
-Quickly notice that the web_searcher instance will keep track of your 'offset' value every time you call the .search() method.
+Quickly notice that the web_searcher instance will keep track of your 'offset' value every time you call the .search() method. **This will be important in Step 3: Paging Results**
 ```py
 >>> print web_searcher.current_offset
 0
@@ -96,7 +97,7 @@ Quickly notice that the web_searcher instance will keep track of your 'offset' v
 .search() returns a list of WebResult objects. Each WebResult is `__repr__`'d with its display URL.
 ```py
 >>> packaged_json = web_searcher.search()
-'Bing says there are an estimated OVER 9000!!!! results matching your query'
+'Bing says there are an "estimated" 149 results matching your query'
 >>> packaged_json[0]
 WebResponse Obj: www.madeupwebsite.com
 ```
@@ -122,26 +123,75 @@ The WebResponse objects will expose the meat & potatoes if you will. Check it ou
 'http://www.bing.com/cr?IG4537854378543873458787193244_ARRRRGHGHHHHHHFD2SA4HJ3KLJK4LSDFL<(^_^)>DFS43FJKA43730984%2fwww.madeupwebsite.com%2f&p=DevEx,9999'
 ```
 
-The default number of results requested is 50, the maximum # of results Bing will return per query.
+
+
+##Step 3: Paging Results
+
+Recall that `self.current_offset` value I referenced in step 2. The `offset` value can be used in conjunction with the `count` user_param to get a slice of the `totalEstimatedMatches` value which Bing exposes after your first query. 
+
+Let's quickly recall what was printed when we called `.search()` for the first time.
+```py
+>>> packaged_json = web_searcher.search()
+'Bing says there are an estimated 149 results matching your query'
+```
+
+Bing reported back that `totalEstimatedMatches` was 150. Let's recap what values we have so far:
+```py
+>>> print web_searcher.total_estimated_matches
+149
+```
+
+The default number of results requested is 50 (the maximum # of results Bing will return per query,) so that's the length of what we get when we call .search() 
 ```py
 >>> len(packaged_json)
 50
 ```
 
-Let's check the web_searcher's offset value again 
+Now take a look at the current_offset value that we now have. 
 ```py
 >>> web_searcher.current_offset
 50
 ```
+So, we've retrieved 50 out of the 149 total results that exist, and our offset value is now set to 50.
 
-Now we know that running web_searcher.search() again will return the next 50 results.
+
+We know that running web_searcher.search() again will return 50 more results, so let's do .search() again and take a look at our numbers.
 ```py
 >>> packaged_json_2 = web_searcher.search()
+>>> len(packaged_json_2)
+50
+```
+
+Now we check the web_searcher's offset value again. Remember that so far we've done 2 searches, and each one has given us 50 results.
+```py
 >>> web_searcher.current_offset
 100
+```
+
+Has total_estimated_matches changed? Let's find out:
+```py
+>>> print web_searcher.total_estimated_matches
+149
+```
+Nope. Still the same. This makes sense; the number of possible results should not change for any one query.
+
+
+For good measure, we can check equivalency and make sure that `packaged_json_2` received different records than did `packaged_json`
+```py
 >>> packaged_json == packaged_json_2
 False
 ```
+
+Let's see what happens when we try to get the next 50 results. 
+```py
+>>> packaged_json_3 = web_searcher.search()
+>>> print len(packaged_json_3)
+49
+>>> print web_searcher.current_offset
+149
+```
+We didn't get 50! We got the rest of what was possible, and py-cog-serv recognized this and didn't throw an error in your face. That said, running .search() again with an offset value of 149 and a totalEstimatedResults value ALSO of 149, we will receive 0 objects from our query, and probably get some error thrown in our face.
+
 
 For more advanced usage such as computational queries & compound queries, check back soon for guidance or poke at the code.
 
