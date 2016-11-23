@@ -1,7 +1,7 @@
 from _socket import gethostbyname, gethostname
 # from fake_useragent import UserAgent as UA
 from pycogserv.dict_mod import OrderedDictWithPrepend
-import random
+
 
 
 class user_constants():
@@ -19,9 +19,7 @@ class user_constants():
     ###############################################
     ##              DON'T TOUCH                  ##
     ###############################################
-    randNums = [random.randint(51,125) for i in range(7)]
-    randName = ''.join([chr(x) for x in randNums])
-    user_agent = {'user-agent': randName}
+
     HEADERS = OrderedDictWithPrepend()
     INCLUDED_PARAMS = OrderedDictWithPrepend()
 
