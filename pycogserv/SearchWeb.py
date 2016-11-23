@@ -1,9 +1,9 @@
 from socket import gethostname, gethostbyname
 from time import sleep
 import requests
-from dict_mod import OrderedDictWithPrepend
-from constants import user_constants, static_constants
-from validations import QueryChecker, ResponseChecker
+from pycogserv.dict_mod import OrderedDictWithPrepend
+from pycogserv.constants import user_constants, static_constants
+from pycogserv.validations import QueryChecker, ResponseChecker
 # import pdb
 
 """
@@ -43,7 +43,7 @@ class BingSearch(object):
         if header_dict is user_constants.HEADERS:
             self.header = header_dict
             self.header.prepend('Ocp-Apim-Subscription-Key', api_key)
-            for key, val in self.header.items():
+            for key, val in list(self.header.items()):
                 if val == None:
                     del self.header[key]
         else:
@@ -54,7 +54,7 @@ class BingSearch(object):
         :param limit: number of results to return. max is 50.
         :return json_results: a mess of json right now...in a dictionary.
         """
-        return self._search(limit, **kwargs)
+        return self._search(limit=50, **kwargs)
 
     def manual_header_entry(self):
         """
@@ -66,34 +66,34 @@ class BingSearch(object):
         while True:
             headr = OrderedDictWithPrepend()
             if not headr:
-                api_key = raw_input('enter your api key')
-                ua_str = raw_input('enter a valid User-Agent string')
-                ipaddr = raw_input('enter your ip address (or leave blank to autodetect)')
+                api_key = eval(input('enter your api key'))
+                ua_str = eval(input('enter a valid User-Agent string'))
+                ipaddr = eval(input('enter your ip address (or leave blank to autodetect)'))
                 if not ipaddr:
                     ipaddr = gethostbyname(gethostname())
                 headr['Ocp-Apim-Subscription-Key'] = api_key
                 headr['User-Agent'] = ua_str
                 headr['X-Search-ClientIP'] = ipaddr
-            print '\nYour auth-key is {}\nYour User-Agent string is {}\nYour ip address will appear as {}\n\n\n\n'.format(
-                headr['Ocp-Apim-Subscription-Key'], headr['User-Agent'], headr['X-Search-ClientIP'])
-            response1 = raw_input(
-                'To change your auth-key enter (a)\nTo change your User-Agent string enter (u)\nTo change your ip address enter (i)\n\nIf you are satisfied, press (y) to confirm, or (n) to start over.\n> :')
+            print(('\nYour auth-key is {}\nYour User-Agent string is {}\nYour ip address will appear as {}\n\n\n\n'.format(
+                headr['Ocp-Apim-Subscription-Key'], headr['User-Agent'], headr['X-Search-ClientIP'])))
+            response1 = eval(input(
+                'To change your auth-key enter (a)\nTo change your User-Agent string enter (u)\nTo change your ip address enter (i)\n\nIf you are satisfied, press (y) to confirm, or (n) to start over.\n> :'))
             if response1.lower() == 'y':
                 return headr
             elif response1.lower() == 'n':
                 del headr
                 continue
             elif response1.lower() == 'a':
-                headr['Ocp-Apim-Subscription-Key'] = raw_input('enter your api key')
+                headr['Ocp-Apim-Subscription-Key'] = eval(input('enter your api key'))
                 continue
             elif response1.lower() == 'u':
-                headr['User-Agent'] = raw_input('enter a valid User-Agent string')
+                headr['User-Agent'] = eval(input('enter a valid User-Agent string'))
                 continue
             elif response1.lower() == 'i':
-                headr['X-Search-ClientIP'] = raw_input('enter "your" ip address')
+                headr['X-Search-ClientIP'] = eval(input('enter "your" ip address'))
                 continue
             else:
-                print '{} is not a valid option. Try again.'.format(response1)
+                print(('{} is not a valid option. Try again.'.format(response1)))
                 continue
 
 
@@ -112,7 +112,7 @@ class BingWebSearch(BingSearch):
 
         self.param_dict = OrderedDictWithPrepend()
         if addtnl_params and type(addtnl_params) == OrderedDictWithPrepend:
-            for key, value in addtnl_params.items():
+            for key, value in list(addtnl_params.items()):
                 if key in static_constants.BASE_QUERY_PARAMS[2:]:
                     self.param_dict[key] = addtnl_params[key]
                 else: raise ValueError('One or more keys in param-dict are not valid params.')
@@ -126,11 +126,11 @@ class BingWebSearch(BingSearch):
         ## Run query validations
         is_ok = QueryChecker.check_web_params(self.param_dict, self.header)
         if is_ok:
-            print 'Query params PASSED validation.'
+            print('Query params PASSED validation.')
         else:
             raise AttributeError('query checker has a bug')
-        print 'run <instance>.search() to run query and print json returned\ncurrent URL format is {}'.format(
-            self.BASE_URL)
+        print(('run <instance>.search() to run query and print json returned\ncurrent URL format is {}'.format(
+            self.BASE_URL)))
 
     def _search(self, limit, override=False, newquery=None):
         """
@@ -151,12 +151,12 @@ class BingWebSearch(BingSearch):
             raise AssertionError('query override has been activated but you have not specified a new query.')
 
         # Modify some variable/nonvariable params to enable paging and restrict query to webpages.
-        if 'q' in self.param_dict.keys():
+        if 'q' in list(self.param_dict.keys()):
             if override:
                 del self.param_dict['q']
                 self.param_dict.prepend('q', self._insert_web_search_query(override=override, newquery=newquery))
             else:
-                print 'keeping {} as search-query value'.format(self.query)
+                print(('keeping {} as search-query value'.format(self.query)))
                 pass
         else:
             self.param_dict.prepend('q', self._insert_web_search_query(override=override, newquery=newquery))
@@ -171,7 +171,7 @@ class BingWebSearch(BingSearch):
         try:
             response_object = requests.get(self.BASE_URL, params=self.param_dict, headers=self.header)
         except requests.Timeout:
-            print 'requests module timed out. Returning NoneType'
+            print('requests module timed out. Returning NoneType')
             return None
 
         # Handle error-codes and Preempt garbage results if URL is too long.
@@ -186,10 +186,10 @@ class BingWebSearch(BingSearch):
         # Return packaged JSON or HTML. Update 'current_offset' and 'last_response...' caches.
         self.last_response = response_object
         self.last_url_sent = response_object.url
-        if 'textFormat' in self.param_dict.keys() and self.param_dict['textFormat']:
+        if 'textFormat' in list(self.param_dict.keys()) and self.param_dict['textFormat']:
             if self.param_dict['textFormat'].upper() == 'HTML':
                 self.current_offset += min(50, limit)
-                print 'returning HTML w/o packaging. <instance>.last_response_packaged will remain set to None.'
+                print('returning HTML w/o packaging. <instance>.last_response_packaged will remain set to None.')
                 return response_object.text()
         else:
             packaged_json = self.parse_json(response_object.json())
@@ -206,7 +206,7 @@ class BingWebSearch(BingSearch):
                 Returned as a LIST of WebResult objects with len == the # of links returned by Bing.
         """
         if not self.total_estimated_matches:
-            print 'Bing says there are an estimated {} results matching your query'.format(json_response['webPages']['totalEstimatedMatches'])
+            print(('Bing says there are an estimated {} results matching your query'.format(json_response['webPages']['totalEstimatedMatches'])))
             self.total_estimated_matches = int(json_response['webPages']['totalEstimatedMatches'])
         packaged_json = [WebResult(single_json_entry) for single_json_entry in json_response['webPages']['value']]
         return packaged_json

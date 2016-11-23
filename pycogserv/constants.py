@@ -1,6 +1,6 @@
 from _socket import gethostbyname, gethostname
-from fake_useragent import UserAgent as UA
-from dict_mod import OrderedDictWithPrepend
+# from fake_useragent import UserAgent as UA
+from pycogserv.dict_mod import OrderedDictWithPrepend
 
 
 
@@ -19,14 +19,14 @@ class user_constants():
     ###############################################
     ##              DON'T TOUCH                  ##
     ###############################################
-    user_agent = UA()
+
     HEADERS = OrderedDictWithPrepend()
     INCLUDED_PARAMS = OrderedDictWithPrepend()
 
     ###############################################
     ## Enter default-header customizations here. ##
     ###############################################
-    HEADERS['User-Agent'] = user_agent.firefox
+    HEADERS['User-Agent'] = "Mozilla/5.0 (Windows NT 6.2; Win64; x64; rv:16.0.1) Gecko/20121011 Firefox/16.0.1"
     HEADERS['X-Search-ClientIP'] = gethostbyname(gethostname())
     HEADERS['X-MSEdge-ClientID'] = None
     HEADERS['Accept'] = None
