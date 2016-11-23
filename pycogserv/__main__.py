@@ -1,4 +1,4 @@
-"""Command line parsing""""
+"""Command line parsing"""
 from pycogserv import SearchWeb
 import sys
 
