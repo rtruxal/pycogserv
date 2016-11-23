@@ -135,7 +135,7 @@ Let's quickly recall what was printed when we called `.search()` for the first t
 'Bing says there are an estimated 149 results matching your query'
 ```
 
-Bing reported back that `totalEstimatedMatches` was 150. Let's recap what values we have so far:
+Bing reported back that `totalEstimatedMatches` was 149 and **NOT** 150. Let's recap what values we have so far:
 ```py
 >>> print web_searcher.total_estimated_matches
 149
