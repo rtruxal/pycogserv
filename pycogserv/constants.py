@@ -1,7 +1,6 @@
 from _socket import gethostbyname, gethostname
-# from fake_useragent import UserAgent as UA
-from pycogserv.dict_mod import OrderedDictWithPrepend
 
+from pycogserv.utils.dict_mod import OrderedDictWithPrepend
 
 
 class user_constants():

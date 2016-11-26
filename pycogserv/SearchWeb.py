@@ -1,9 +1,11 @@
 from socket import gethostname, gethostbyname
 from time import sleep
+
 import requests
-from pycogserv.dict_mod import OrderedDictWithPrepend
 from pycogserv.constants import user_constants, static_constants
-from pycogserv.validations import QueryChecker, ResponseChecker
+from pycogserv.utils.dict_mod import OrderedDictWithPrepend
+from pycogserv.utils.validations import QueryChecker, ResponseChecker
+
 # import pdb
 
 """
@@ -45,6 +47,7 @@ class BingSearch(object):
             self.header.prepend('Ocp-Apim-Subscription-Key', api_key)
             for key, val in list(self.header.items()):
                 if val == None:
+                    ## TODO: make self.header handle/ignore NoneType entries.
                     del self.header[key]
         else:
             self.header = self.manual_header_entry()
@@ -108,8 +111,7 @@ class BingWebSearch(BingSearch):
 
     def __init__(self, api_key, query, safe=False, header_dict=user_constants.HEADERS,
                  addtnl_params=user_constants.INCLUDED_PARAMS):
-        self.BASE_URL = static_constants.WEBSEARCH_ENDPOINT
-
+        self._BASE_URL = static_constants.WEBSEARCH_ENDPOINT
         self.param_dict = OrderedDictWithPrepend()
         if addtnl_params and type(addtnl_params) == OrderedDictWithPrepend:
             for key, value in list(addtnl_params.items()):
@@ -130,7 +132,7 @@ class BingWebSearch(BingSearch):
         else:
             raise AttributeError('query checker has a bug')
         print(('run <instance>.search() to run query and print json returned\ncurrent URL format is {}'.format(
-            self.BASE_URL)))
+            self._BASE_URL)))
 
     def _search(self, limit, override=False, newquery=None):
         """
@@ -169,7 +171,7 @@ class BingWebSearch(BingSearch):
 
         # Query the API. Receive response object.
         try:
-            response_object = requests.get(self.BASE_URL, params=self.param_dict, headers=self.header)
+            response_object = requests.get(self._BASE_URL, params=self.param_dict, headers=self.header)
         except requests.Timeout:
             print('requests module timed out. Returning NoneType')
             return None
@@ -179,7 +181,7 @@ class BingWebSearch(BingSearch):
             raise ValueError('URL too long. Limit URLs to < 1,200 chars.')
         response_validated = ResponseChecker.validate_request_response(response_object)
         if response_validated == '429':
-            response_object = self.handle_429_error(url=response_object.url)
+            response_object = self._handle_429_error(url=response_object.url)
         else:
             pass
 
@@ -192,13 +194,13 @@ class BingWebSearch(BingSearch):
                 print('returning HTML w/o packaging. <instance>.last_response_packaged will remain set to None.')
                 return response_object.text()
         else:
-            packaged_json = self.parse_json(response_object.json())
+            packaged_json = self._parse_json(response_object.json())
             self.last_response_packaged = packaged_json
             self.current_offset += min(50, limit, len(packaged_json))
             return packaged_json
 
 
-    def parse_json(self, json_response):
+    def _parse_json(self, json_response):
         """
         Takes raw JSON response and packages them as instances of class WebResult.
         :param json_response: EX -- <requests_response_object>.json()
@@ -217,7 +219,7 @@ class BingWebSearch(BingSearch):
         # self.current_offset += min(50, limit, len(packaged_results))
         # return packaged_results
 
-    def handle_429_error(self, url):
+    def _handle_429_error(self, url):
         timeout_cnt = 0
         while True:
             if timeout_cnt < 5:
