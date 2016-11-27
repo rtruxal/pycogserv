@@ -25,7 +25,8 @@ True
 
 Usage
 =====
-##Step 1: Customize Headers & Optional Query Params
+#Step 1: Customize Headers & Optional Query Params
+
 
 Study constants.py, it will guide you through the decisions you're in charge of making. The tool will take care of their implementation. Keep in mind the API-key must be passed manually to the constructor in step 2.
  
