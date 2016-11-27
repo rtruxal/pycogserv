@@ -5,6 +5,7 @@ from pycogserv.utils.dict_mod import OrderedDictWithPrepend
 
 class user_constants():
     """
+
     This class gives access to the default headers and query-modifiers used when a
     BingWebSearch object is instantiated.
 
@@ -37,7 +38,7 @@ class user_constants():
     ###############################################
     ## Web Params:
     INCLUDED_PARAMS['cc'] = None               # <--(See constants._COUNTRY_CODES below for available options)
-    INCLUDED_PARAMS['count'] = None            # <--(Enter a number from 0-50. Must by type==str. EX: count of 5 should be "5")
+    INCLUDED_PARAMS['count'] = "50"  # <--(Enter a number from 0-50. Must by type==str. EX: count of 5 should be "5")
     INCLUDED_PARAMS['freshness'] = None        # <--(Poss values are 'Day', 'Week', or 'Month')
     INCLUDED_PARAMS['mkt'] = None              # <--(See constants._MARKET_CODES below for available options)
     INCLUDED_PARAMS['offset'] = None           # <--(Use this in conjunction with totalEstimatedMatches and count to page. Same format as 'count')
