@@ -36,10 +36,10 @@ class user_constants():
     ##     Enter query customizations here.      ##
     ###############################################
     ## Web Params:
-    INCLUDED_PARAMS['cc'] = None               # <--(See constants.COUNTRY_CODES below for available options)
+    INCLUDED_PARAMS['cc'] = None               # <--(See constants._COUNTRY_CODES below for available options)
     INCLUDED_PARAMS['count'] = None            # <--(Enter a number from 0-50. Must by type==str. EX: count of 5 should be "5")
     INCLUDED_PARAMS['freshness'] = None        # <--(Poss values are 'Day', 'Week', or 'Month')
-    INCLUDED_PARAMS['mkt'] = None              # <--(See constants.MARKET_CODES below for available options)
+    INCLUDED_PARAMS['mkt'] = None              # <--(See constants._MARKET_CODES below for available options)
     INCLUDED_PARAMS['offset'] = None           # <--(Use this in conjunction with totalEstimatedMatches and count to page. Same format as 'count')
     INCLUDED_PARAMS['responseFilter'] = None   # <--(Poss values are 'Computation', 'Images', 'News', 'RelatedSearches', SpellSuggestions', 'TimeZone', 'Videos', or 'Webpages')
     INCLUDED_PARAMS['safeSearch'] = None       # <--(Poss values are 'Off', 'Moderate', and 'Strict.')
@@ -61,9 +61,9 @@ class static_constants():
     ####################################################
 
     ####################################################
-    ##    BASE_QUERY_PARAMS[0] & [1] are special!     ##
+    ##    _BASE_QUERY_PARAMS[0] & [1] are special!     ##
     ####################################################
-    BASE_QUERY_PARAMS = (
+    _BASE_QUERY_PARAMS = (
         'q',  # <-- if you change this to 'images/search?q' or 'news/search?q' it will change ze behavior much like repsonsefileter
         'category',  # <--news only
         'cc',
@@ -81,7 +81,7 @@ class static_constants():
     ####################################################
     ##    Use these in conjunction w/ the cc param    ##
     ####################################################
-    COUNTRY_CODES = {
+    _COUNTRY_CODES = {
         'Australia': 'AR',
         'Austria': 'AU',
         'Belgium': 'AT',
@@ -123,7 +123,7 @@ class static_constants():
     ####################################################
     ##    Use these in conjunction w/ the mkt param   ##
     ####################################################
-    MARKET_CODES = {
+    _MARKET_CODES = {
         'Argentina-Spanish': 'es-AR',
         'Australia-English': 'en-AU',
         'Austria-German': 'de-AT',
@@ -170,20 +170,20 @@ class static_constants():
     ####################################################
     ##   Various error codes and their descriptions   ##
     ####################################################
-    ERROR_CODES = {
+    _ERROR_CODES = {
         '200' : 'The call succeeded',
         '400' : 'One of the query parameters is missing or not valid',
         '401' : 'The subscription key is missing or not valid',
         '403' : "The user is authenticated but doesn't have permission to the requested resource. Bing may also return this status if the caller exceeded their queries per month quota",
         '404' : 'Page not found: Bing should not be throwing this error. There is likely a fundamental problem with the structure of your query URL.',
-        '410' : 'The request was made using HTTP. Only HTTPS is supported.(BASE_ENDPOINT USES HTTPS. EITHER YOU CHANGED THAT OR YOU ARE NOT AT FAULT)',
+        '410' : 'The request was made using HTTP. Only HTTPS is supported.(_BASE_ENDPOINT USES HTTPS. EITHER YOU CHANGED THAT OR YOU ARE NOT AT FAULT)',
         '429' : 'The user exceeded their queries per second quota',
     }
 
     ####################################################
     ##      These are for adding to the base url      ##
     ####################################################
-    SPECIALTY_APIS = {
+    _SPECIALTY_APIS = {
         'images': 'images/',
         'images_trending': 'images/trending/',  # <-- works only for mkt= en-US, en-CA, and en-AU
         'videos': 'videos/',
@@ -198,15 +198,15 @@ class static_constants():
     ##  available for Bing Search APIs through Azure   ##
     ##             Cognitive Services                  ##
     #####################################################
-    BASE_ENDPOINT = 'https://api.cognitive.microsoft.com/bing/v5.0/'
+    _BASE_ENDPOINT = 'https://api.cognitive.microsoft.com/bing/v5.0/'
 
     ## Commented out Endpoint URLs have special format which is not defined by .../search?q=...
     ## These are not yet supported.
-    WEBSEARCH_ENDPOINT = BASE_ENDPOINT + 'search?'
-    IMAGESEARCH_ENDPOINT = BASE_ENDPOINT + SPECIALTY_APIS['images'] + 'search?'
-    # IMAGESEARCH_TRENDING_ENDPOINT = BASE_ENDPOINT + SPECIALTY_APIS['images_trending'] + ?????
-    VIDEOSEARCH_ENDPOINT = BASE_ENDPOINT + SPECIALTY_APIS['videos'] + 'search?'
-    # VIDEOSEARCH_TRENDING_ENDPOINT = BASE_ENDPOINT + SPECIALTY_APIS['videos_trending'] + ?????
-    # VIDEOSEARCH_DETAILS_ENDPOINT = BASE_ENDPOINT + SPECIALTY_APIS['images_details'] + ?????
-    NEWSSEARCH_ENDPOINT = BASE_ENDPOINT + SPECIALTY_APIS['news'] + 'search?'
-    # NEWSSEARCH_TRENDING_ENDPOINT = BASE_ENDPOINT + SPECIALTY_APIS['news_trending'] + ?????
+    _WEBSEARCH_ENDPOINT = _BASE_ENDPOINT + 'search?'
+    _IMAGESEARCH_ENDPOINT = _BASE_ENDPOINT + _SPECIALTY_APIS['images'] + 'search?'
+    # _IMAGESEARCH_TRENDING_ENDPOINT = _BASE_ENDPOINT + _SPECIALTY_APIS['images_trending'] + ?????
+    _VIDEOSEARCH_ENDPOINT = _BASE_ENDPOINT + _SPECIALTY_APIS['videos'] + 'search?'
+    # _VIDEOSEARCH_TRENDING_ENDPOINT = _BASE_ENDPOINT + _SPECIALTY_APIS['videos_trending'] + ?????
+    # _VIDEOSEARCH_DETAILS_ENDPOINT = _BASE_ENDPOINT + _SPECIALTY_APIS['images_details'] + ?????
+    _NEWSSEARCH_ENDPOINT = _BASE_ENDPOINT + _SPECIALTY_APIS['news'] + 'search?'
+    # _NEWSSEARCH_TRENDING_ENDPOINT = _BASE_ENDPOINT + _SPECIALTY_APIS['news_trending'] + ?????

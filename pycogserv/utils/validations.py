@@ -60,8 +60,8 @@ class ResponseChecker():
             if response.status_code == 429:
                 print('queries/second quota exceeded. this func will make 5 attempts to resend.')
                 return '429'
-            elif str(response.status_code) in list(static_constants.ERROR_CODES.keys()):
-                raise AssertionError(static_constants.ERROR_CODES[str(response.status_code)])
+            elif str(response.status_code) in list(static_constants._ERROR_CODES.keys()):
+                raise AssertionError(static_constants._ERROR_CODES[str(response.status_code)])
             else:
                 raise ReferenceError('unknown status code returned: {}\nurl string is: {}'.format(response.status_code, response.url))
         else: return True

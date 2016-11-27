@@ -111,11 +111,11 @@ class BingWebSearch(BingSearch):
 
     def __init__(self, api_key, query, safe=False, header_dict=user_constants.HEADERS,
                  addtnl_params=user_constants.INCLUDED_PARAMS):
-        self._BASE_URL = static_constants.WEBSEARCH_ENDPOINT
+        self._BASE_URL = static_constants._WEBSEARCH_ENDPOINT
         self.param_dict = OrderedDictWithPrepend()
         if addtnl_params and type(addtnl_params) == OrderedDictWithPrepend:
             for key, value in list(addtnl_params.items()):
-                if key in static_constants.BASE_QUERY_PARAMS[2:]:
+                if key in static_constants._BASE_QUERY_PARAMS[2:]:
                     self.param_dict[key] = addtnl_params[key]
                 else: raise ValueError('One or more keys in param-dict are not valid params.')
         elif not addtnl_params:
@@ -233,7 +233,7 @@ class BingWebSearch(BingSearch):
                 else:
                     raise AssertionError('response not successful')
             else:
-                raise IOError(static_constants.ERROR_CODES['429'])
+                raise IOError(static_constants._ERROR_CODES['429'])
         return r2
 
     def _insert_web_search_query(self, override=False, newquery=None):
