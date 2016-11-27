@@ -3,7 +3,7 @@ Intro
 =====
 
 
-VERSION=0.0.3 | supports Python 2.7
+VERSION=0.0.4 | supports Python 2.7
 
 
 ####An Overly Explanatory Intro to Cognitive Services aka Bing Search API v5
@@ -13,14 +13,14 @@ VERSION=0.0.3 | supports Python 2.7
 
 Installation
 ============
-This module is not yet packaged. Until then, here is a sample import into REPL.
+This module is not available from pip because I'm lazy. Until then, here is a sample import into REPL.
 
 ```py
 >>> import os, sys
->>> os.path.exists(os.path.normpath('/path/to/py-cog-serve/'))
+>>> os.path.exists(os.path.normpath('/path/to/pycogserve/'))
 True
->>> sys.path.append(os.path.normpath('/path/to/py-cog-serve/'))
->>> from source.SearchWeb import BingWebSearch
+>>> sys.path.append(os.path.normpath('/path/to/pycogserve/'))
+>>> from pycogserv import BingWebSearch
 ```
 
 
