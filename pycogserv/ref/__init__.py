@@ -25,7 +25,8 @@ They're disguised as pointless local variables. Here's how you gettem --
     ..
     .
     ..
-    ...
+    ...(5 mins later)
+
             (ZZZzzz...)
     (-_-)*'`
 
