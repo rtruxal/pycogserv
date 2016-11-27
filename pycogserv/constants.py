@@ -5,6 +5,7 @@ from pycogserv.utils.dict_mod import OrderedDictWithPrepend
 
 class user_constants():
     """
+
     This class gives access to the default headers and query-modifiers used when a
     BingWebSearch object is instantiated.
 

@@ -109,6 +109,7 @@ class BingSearch(object):
 
 class BingWebSearch(BingSearch):
     """
+
     Web Search Object.
     Allows for default or manual header entry.
     Mandatory fields are 'api_key' and 'query'
