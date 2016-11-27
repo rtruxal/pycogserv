@@ -5,8 +5,10 @@ import requests
 from pycogserv.constants import user_constants, static_constants
 from pycogserv.utils.dict_mod import OrderedDictWithPrepend
 from pycogserv.utils.validations import QueryChecker, ResponseChecker
-
 # import pdb
+
+## TODO: Update README.md to reflect ref subpackage
+## TODO: Add Alt-Endpoint functionality (news, images, etc...)
 
 """
 Massive swaths of this v5 API interface were graciously stolen from py-bing-search
@@ -21,7 +23,7 @@ Modify query params in class 'constants.'
 TODO:
     - Add image/news/video classes w/ support for API-specific querying
         --Base Endpoint URLs for these are partially built in class "constants"
-    - implement paging with self.current_offset.
+    - Update Readme to reflect ref subpackage.
 """
 
 
