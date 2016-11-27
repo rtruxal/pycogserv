@@ -41,6 +41,11 @@ class BingSearch(object):
         # Cache last response
         self.last_response = None
         self.last_response_packaged = None
+        # Flags to indicate state.
+        self._instance_has_called_requests = False
+        self._instance_shows_last_response_was_paged = False
+
+
 
         if header_dict is user_constants.HEADERS:
             self.header = header_dict
@@ -52,10 +57,12 @@ class BingSearch(object):
         else:
             self.header = self.manual_header_entry()
 
-    def search(self, limit=50, **kwargs):
+    def search(self, count_param=50, **kwargs):
         """
-        :param limit: number of results to return. max is 50.
-        :return json_results: a mess of json right now...in a dictionary.
+        :param count_param: Number of JSON results you want the API to return. count_param will be lovingly referred to as 'limit' in henceforth c0de. Max value alowed by MS is 50.
+        :return packaged_json(default) OR raw_html OR NoneType: 'packaged_json' is a list of WebResult objects (aka Smallz.)
+                                                                Set user_constants.INCLUDED_PARAMS['textFormat'] to = 'HTML' to get raw html returned.
+                                                                Request timeout returns nothing but doesn't raise any errors.
         """
         return self._search(limit=50, **kwargs)
 
@@ -102,6 +109,7 @@ class BingSearch(object):
 
 class BingWebSearch(BingSearch):
     """
+
     Web Search Object.
     Allows for default or manual header entry.
     Mandatory fields are 'api_key' and 'query'
@@ -134,6 +142,10 @@ class BingWebSearch(BingSearch):
         print(('run <instance>.search() to run query and print json returned\ncurrent URL format is {}'.format(
             self._BASE_URL)))
 
+    def __repr__(self):
+        return "BingWebSearch objec with query-string = {}".format(self.query)
+
+
     def _search(self, limit, override=False, newquery=None):
         """
         Meat-&Potatoes of the search. Inserts search query and makes API call.
@@ -143,81 +155,100 @@ class BingWebSearch(BingSearch):
         :return json_results: list of packaged JSON results returned from Microsoft.
         see WebResult class below.
         """
-
-        # Allow _search to initialize new query.
-        if override and newquery:
-            self.query = newquery
-            self.current_offset = 0
-            self.total_estimated_matches = None
-        elif override and not newquery:
-            raise AssertionError('query override has been activated but you have not specified a new query.')
-
-        # Modify some variable/nonvariable params to enable paging and restrict query to webpages.
-        if 'q' in list(self.param_dict.keys()):
-            if override:
-                del self.param_dict['q']
-                self.param_dict.prepend('q', self._insert_web_search_query(override=override, newquery=newquery))
-            else:
-                print(('keeping {} as search-query value'.format(self.query)))
-                pass
-        else:
-            self.param_dict.prepend('q', self._insert_web_search_query(override=override, newquery=newquery))
-        self.param_dict['offset'] = self.current_offset
-        self.param_dict['responseFilter'] = 'Webpages'
-        if limit > 50 or limit < 1:
-            raise ValueError('limit must be positive integer b/w 1 and 50')
-        else:
-            self.param_dict['count'] = str(limit)
-
+        #####################################################
+        # Finalize websearch URL build.
+        #
+        # Note: If specified using both override=True and newquery='some random query str...',
+        #       _search() can reinit a new query to restart paging at runtime.
+        self._load_q_param_or_pass(override=override, newquery=newquery)
+        self._load_websearch_specific_and_paging_params(limit=limit)
+        #####################################################
         # Query the API. Receive response object.
+        # Return NoneType if server-side timeout
         try:
             response_object = requests.get(self._BASE_URL, params=self.param_dict, headers=self.header)
+            self._instance_has_called_requests = True
         except requests.Timeout:
             print('requests module timed out. Returning NoneType')
             return None
-
-        # Handle error-codes and Preempt garbage results if URL is too long.
-        if len(response_object.url) > 1500:
-            raise ValueError('URL too long. Limit URLs to < 1,200 chars.')
+        #####################################################
+        # Handle error-codes and Warn about potential garbage results if query URL is too long.
+        if len(response_object.url) > 1300:
+            print('WARNING: URL too long at {} characters.\n Bing can silently truncate your query.\n Limit URLs to < 1,200 chars.').format(len(response_object.url))
         response_validated = ResponseChecker.validate_request_response(response_object)
         if response_validated == '429':
             response_object = self._handle_429_error(url=response_object.url)
         else:
             pass
+        #####################################################
+        # Return packaged JSON or Raw HTML.
+        #
+        # Updates: 'self.current_offset'
+        #          'self.last_response'
+        #          'self.last_response_packaged'
 
-        # Return packaged JSON or HTML. Update 'current_offset' and 'last_response...' caches.
         self.last_response = response_object
         self.last_url_sent = response_object.url
         if 'textFormat' in list(self.param_dict.keys()) and self.param_dict['textFormat']:
             if self.param_dict['textFormat'].upper() == 'HTML':
                 self.current_offset += min(50, limit)
                 print('returning HTML w/o packaging. <instance>.last_response_packaged will remain set to None.')
-                return response_object.text()
+                # Declaring raw_html explicitly for clarity.
+                raw_html = response_object.text
+                return raw_html
         else:
             packaged_json = self._parse_json(response_object.json())
             self.last_response_packaged = packaged_json
             self.current_offset += min(50, limit, len(packaged_json))
             return packaged_json
 
+    def _load_q_param_or_pass(self, override, newquery):
+        if override and newquery:
+            self._reinit_query_and_paging(newquery=newquery)
+        elif override and not newquery:
+            raise AssertionError('query override has been activated but you have not specified a new query.')
 
-    def _parse_json(self, json_response):
-        """
-        Takes raw JSON response and packages them as instances of class WebResult.
-        :param json_response: EX -- <requests_response_object>.json()
-        :return list of WebResult objects: parsed and prettied JSON results with easy data-access.
-                Returned as a LIST of WebResult objects with len == the # of links returned by Bing.
-        """
-        if not self.total_estimated_matches:
-            print(('Bing says there are an estimated {} results matching your query'.format(json_response['webPages']['totalEstimatedMatches'])))
-            self.total_estimated_matches = int(json_response['webPages']['totalEstimatedMatches'])
-        packaged_json = [WebResult(single_json_entry) for single_json_entry in json_response['webPages']['value']]
-        return packaged_json
+        # Modify some variable/nonvariable params to enable paging and restrict query to webpages.
+        if 'q' in list(self.param_dict.keys()):
+            if not override:
+                pass
+            elif override == True:
+                del self.param_dict['q']
+                self.param_dict.prepend('q', self._insert_web_search_query(override=override, newquery=newquery))
+            else:
+                raise TypeError('override arg is type bool.')
+
+        else:
+            self.param_dict.prepend('q', self._insert_web_search_query())
+
+    def _reinit_query_and_paging(self, newquery):
+        self.query = newquery
+        self.current_offset = 0
+        self.total_estimated_matches = None
+
+    def _insert_web_search_query(self, override=False, newquery=None):
+        if override:
+            return newquery
+        else:
+            return self.query
 
 
-        # return response_data
-        # packaged_results = [WebResult(single_result_json) for single_result_json in json_results['d']['results']]
-        # self.current_offset += min(50, limit, len(packaged_results))
-        # return packaged_results
+    def _load_websearch_specific_and_paging_params(self, limit=50):
+        self.param_dict['offset'] = self.current_offset
+        self.param_dict['responseFilter'] = 'Webpages'
+
+        try:
+            if self.param_dict['count'] and type(int(self.param_dict['count'])) == int:
+                # Means condition already satisfied. Quietly pass by returning NoneType.
+                return None
+        except ValueError:
+            print("'count' value specified is not convertible to type int.")
+            print("'count' param will now default to 50")
+
+        if limit > 50 or limit < 1:
+            raise ValueError('limit must be positive integer b/w 1 and 50')
+        else:
+            self.param_dict['count'] = str(limit)
 
     def _handle_429_error(self, url):
         timeout_cnt = 0
@@ -236,16 +267,24 @@ class BingWebSearch(BingSearch):
                 raise IOError(static_constants._ERROR_CODES['429'])
         return r2
 
-    def _insert_web_search_query(self, override=False, newquery=None):
-        if override:
-            return newquery
-        else:
-            return self.query
+    def _parse_json(self, json_response):
+        """
+        Takes raw JSON response and packages them as instances of class WebResult.
+        :param json_response: EX -- <requests_response_object>.json()
+        :return list of WebResult objects: parsed and prettied JSON results with easy data-access.
+                Returned as a LIST of WebResult objects with len == the # of links returned by Bing.
+        """
+        if not self.total_estimated_matches:
+            print(('Bing says there are an estimated {} results matching your query'.format(json_response['webPages']['totalEstimatedMatches'])))
+            self.total_estimated_matches = int(json_response['webPages']['totalEstimatedMatches'])
+        packaged_json = [WebResult(single_json_entry) for single_json_entry in json_response['webPages']['value']]
+        return packaged_json
+
 
 
 class WebResult(object):
     '''
-    Attributes which can be called from WebResult instance(WRi) --
+    Attributes which can be called from WebResult instance(aka WebResults instance aka WRi) --
 
     WRi.json: full JSON entry.
     WRi.url: The URL sent back by Bing.
@@ -274,3 +313,20 @@ class WebResult(object):
 
     def __repr__(self):
         return 'WebResponse Obj: {}'.format(self.display_url)
+
+class Bingy(BingWebSearch):
+    """
+    'Legacy' support. BingWebSearch objects are now called "BingWebSearch"s. They're part of BingWebSearch/WebResult.
+    Hilarious, I know.
+    """
+    def __init__(self, api_key, query, safe=False, header_dict=user_constants.HEADERS,
+                 addtnl_params=user_constants.INCLUDED_PARAMS):
+        BingWebSearch.__init__(api_key=api_key, query=query, safe=safe, header_dict=header_dict, addtnl_params=addtnl_params)
+
+class Smallz(WebResult):
+    """
+    'Legacy' support. WebResult objects are now called "WebResult"s. They're part of BingWebSearch/WebResult.
+    It's a knee-slapper dammit; so get ta' slappin.
+    """
+    def __init__(self, result):
+        WebResult.__init__(self, result=result)
