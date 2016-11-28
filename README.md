@@ -67,20 +67,21 @@ From `user_constants`:
  
  **Important Note:** Do not touch `pycogserv.constants.static_constants`. Use the `ref` subpackage for reference so you don't accidentally break things. **Example:** replace ` print constants.static_constants.COUNTRY_CODES` with ` print ref.constants.COUNTRY_CODES`
  * `user_constants` gives access to the default headers and query-modifiers used when a `BingWebSearch` object is instantiated.
- * `ref.constants.static_constants` can be used as reference. Check out:
-    * `static_constants.COUNTRY_CODES`
-    * `static_constants.MARKET_CODES`
-    * `static_constants.ERROR_CODES`
-    * `static_constants.SPECIALTY_APIS`
-    * `static_constants.BASE_ENDPOINT` as well as the alternative formats of the other `static_constant.XXX_ENDPOINT`s listed.
+ * `ref.constants` can be used as reference. Check out:
+    * `ref.constants.COUNTRY_CODES`
+    * `ref.constants.MARKET_CODES`
+    * `ref.constants.ERROR_CODES`
+    * `ref.constants.SPECIALTY_APIS`
+    * `ref.constants.BASE_ENDPOINT`
+    * `ref.constants.SPECIALTY_API_ENDPOINTS`
 
 
 
 
 ##Step 2: Search For Web Results:
 ```py
->>> from source.SearchWeb import BingWebSearch
->>> from source.constants import user_constants, static_constants #<--Not necessary. Added for clarification
+>>> from pycogserv import BingWebSearch
+>>> from pycogserv import user_constants
 
 >>> search_query = "ENTER YOUR ARBITRARY SEARCH TERMS HERE"
 >>> api_key = "ENTER ONE OF YOUR API KEYS HERE"
