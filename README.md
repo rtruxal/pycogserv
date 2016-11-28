@@ -13,14 +13,17 @@ VERSION=0.0.4 | supports Python 2.7
 
 Installation
 ============
-This module is not available from pip because I'm lazy. Until then, here is a sample import into REPL.
+This module is not yet available via pip because I'm lazy. Until then, here is a sample import into REPL.
 
 ```py
 >>> import os, sys
 >>> os.path.exists(os.path.normpath('/path/to/pycogserve/'))
 True
 >>> sys.path.append(os.path.normpath('/path/to/pycogserve/'))
->>> from pycogserv import BingWebSearch
+>>> 
+>>> from pycogserv import BingWebSearch  #<--This is the main search-interface object.
+>>> from pycogserv import user_constants #<--Import to modify the values contained from the REPL
+>>> from pycogserv import ref            #<--ref is a subpackage containing various reference modules.
 ```
 
 
@@ -31,7 +34,7 @@ Usage
 
 Study constants.py, it will guide you through the decisions you're in charge of making. The tool will take care of their implementation. Keep in mind the API-key must be passed manually to the constructor in step 2.
  
-From `source.constants.user_constants`:
+From `user_constants`:
 ```py
     ###############################################
     ## Enter default-header customizations here. ##
@@ -61,8 +64,10 @@ From `source.constants.user_constants`:
 ```
 
  You'll notice that `constants.py` has two classes included in it: `user_constants` and `static_constants`. 
+ 
+ **Important Note:** Do not touch `pycogserv.constants.static_constants`. Use the `ref` subpackage for reference so you don't accidentally break things. **Example:** replace ` print constants.static_constants.COUNTRY_CODES` with ` print ref.constants.COUNTRY_CODES`
  * `user_constants` gives access to the default headers and query-modifiers used when a `BingWebSearch` object is instantiated.
- * `static_constants` can be used as reference. Check out:
+ * `ref.constants.static_constants` can be used as reference. Check out:
     * `static_constants.COUNTRY_CODES`
     * `static_constants.MARKET_CODES`
     * `static_constants.ERROR_CODES`
