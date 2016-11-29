@@ -65,7 +65,7 @@ class static_constants():
     ##    _BASE_QUERY_PARAMS[0] & [1] are special!     ##
     ####################################################
     _BASE_QUERY_PARAMS = (
-        'q',  # <-- if you change this to 'images/search?q' or 'news/search?q' it will change ze behavior much like repsonsefileter
+        'query_plaintext',  # <-- if you change this to 'images/search?query_plaintext' or 'news/search?query_plaintext' it will change ze behavior much like repsonsefileter
         'category',  # <--news only
         'cc',
         'count',
@@ -174,7 +174,7 @@ class static_constants():
     _ERROR_CODES = {
         '200' : 'The call succeeded',
         '400' : 'One of the query parameters is missing or not valid',
-        '401' : 'The subscription key is missing or not valid',
+        '401' : 'The subscription _key is missing or not valid',
         '403' : "The user is authenticated but doesn't have permission to the requested resource. Bing may also return this status if the caller exceeded their queries per month quota",
         '404' : 'Page not found: Bing should not be throwing this error. There is likely a fundamental problem with the structure of your query URL.',
         '410' : 'The request was made using HTTP. Only HTTPS is supported.(_BASE_ENDPOINT USES HTTPS. EITHER YOU CHANGED THAT OR YOU ARE NOT AT FAULT)',
@@ -201,7 +201,7 @@ class static_constants():
     #####################################################
     _BASE_ENDPOINT = 'https://api.cognitive.microsoft.com/bing/v5.0/'
 
-    ## Commented out Endpoint URLs have special format which is not defined by .../search?q=...
+    ## Commented out Endpoint URLs have special format which is not defined by .../search?query_plaintext=...
     ## These are not yet supported.
     _WEBSEARCH_ENDPOINT = _BASE_ENDPOINT + 'search?'
     _IMAGESEARCH_ENDPOINT = _BASE_ENDPOINT + _SPECIALTY_APIS['images'] + 'search?'
@@ -211,3 +211,15 @@ class static_constants():
     # _VIDEOSEARCH_DETAILS_ENDPOINT = _BASE_ENDPOINT + _SPECIALTY_APIS['images_details'] + ?????
     _NEWSSEARCH_ENDPOINT = _BASE_ENDPOINT + _SPECIALTY_APIS['news'] + 'search?'
     # _NEWSSEARCH_TRENDING_ENDPOINT = _BASE_ENDPOINT + _SPECIALTY_APIS['news_trending'] + ?????
+
+    # The other way is dumb so we're going to switch to this in a minute.:
+    API_ENDPOINTS = {
+        'web': 'https://api.cognitive.microsoft.com/bing/v5.0/search?',
+        'images': 'https://api.cognitive.microsoft.com/bing/v5.0/images/search?',
+        'images_trending': 'https://api.cognitive.microsoft.com/bing/v5.0/images/trending/search?', # <-- works only for mkt= en-US, en-CA, and en-AU
+        'videos': 'https://api.cognitive.microsoft.com/bing/v5.0/videos/search?',
+        'videos_trending': 'https://api.cognitive.microsoft.com/bing/v5.0/videos/trending/search?',
+        'videos_details': 'https://api.cognitive.microsoft.com/bing/v5.0/videos/details/search?',
+        'news': 'https://api.cognitive.microsoft.com/bing/v5.0/news/search?',
+        'news_trending': 'https://api.cognitive.microsoft.com/bing/v5.0/news/trendingtopics&'
+    }

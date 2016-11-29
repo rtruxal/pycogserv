@@ -3,7 +3,7 @@ from collections import OrderedDict
 class OrderedDictWithPrepend(OrderedDict):
     """
     Extends OrderedDict functionality by adding 'prepend' method.
-    Format is: <instance>.prepend(key, value)
+    Format is: <instance>.prepend(_key, value)
     """
     def prepend(self, key, value, dict_setitem=dict.__setitem__):
         # Python3

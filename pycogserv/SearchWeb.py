@@ -9,14 +9,15 @@ from pycogserv.utils.validations import QueryChecker, ResponseChecker
 
 ## TODO: Update README.md to reflect ref subpackage
 ## TODO: Add Alt-Endpoint functionality (news, images, etc...)
+## TODO: Add autopaging support in BingSearch.search()
 
 """
 Massive swaths of this v5 API interface were graciously stolen from py-bing-search
 you can find it here: https://github.com/tristantao/py-bing-search
 
 Modify query params in class 'constants.'
-    - You can create your own own query-param-dict as a replacement, but use OrderedDict. 'q' must be the first key at runtime.
-    - Dict entries of format "YourDict[key] == None" will be ignored and can therefore be safely included.
+    - You can create your own own query-param-dict as a replacement, but use OrderedDict. 'query_plaintext' must be the first _key at runtime.
+    - Dict entries of format "YourDict[_key] == None" will be ignored and can therefore be safely included.
 
 
 
@@ -36,6 +37,7 @@ class BingSearch(object):
         self.api_key = api_key
         self.safe = safe
         self.query = query
+        self.header_template = header_dict.copy()
         # Paging-support
         self.current_offset = 0
         self.total_estimated_matches = None
@@ -46,27 +48,51 @@ class BingSearch(object):
         # Flags to indicate state.
         self._instance_has_called_requests = False
         self._instance_shows_last_response_was_paged = False
+        self._reuse_header_vals = False
+        self._reuse_query_params = False
 
+        # Build the header.
+        self.build_header(header_dict=header_dict, api_key=api_key)
 
-
-        if header_dict is user_constants.HEADERS:
+    def build_header(self, header_dict, api_key):
+        # Generates or keeps existing header.
+        # Handle prepend issue when user_constants.HEADERS['Ocp-Apim-Subscription-Key'] already has a value.
+        if self.header and self._reuse_header_vals:
+            pass
+        elif header_dict is user_constants.HEADERS:
             self.header = header_dict
-            self.header.prepend('Ocp-Apim-Subscription-Key', api_key)
-            for key, val in list(self.header.items()):
-                if val == None:
+            if 'Ocp-Apim-Subscription-Key' in self.header.keys():
+                if self.header['Ocp-Apim-Subscription-Key'] == api_key:
+                    pass
+                elif self.header['Ocp-Apim-Subscription-Key']:
+                    print(
+                    'Change in API-_key detected. Please remember that switching API keys at runtime is not advised.')
+                    del self.header['Ocp-Apim-Subscription-Key']
+            else:
+                self.header.prepend('Ocp-Apim-Subscription-Key', api_key)
+            for key in self.header.keys():
+                if self.header[key] == None:
                     ## TODO: make self.header handle/ignore NoneType entries.
                     del self.header[key]
         else:
             self.header = self.manual_header_entry()
 
-    def search(self, count_param=50, **kwargs):
+    def search(self, count_param=50, enable_auto_paging=False, **kwargs):
         """
         :param count_param: Number of JSON results you want the API to return. count_param will be lovingly referred to as 'limit' in henceforth c0de. Max value alowed by MS is 50.
         :return packaged_json(default) OR raw_html OR NoneType: 'packaged_json' is a list of WebResult objects (aka Smallz.)
                                                                 Set user_constants.INCLUDED_PARAMS['textFormat'] to = 'HTML' to get raw html returned.
                                                                 Request timeout returns nothing but doesn't raise any errors.
         """
+        self._reuse_header_vals = True
+        if enable_auto_paging:
+            self._reuse_query_params = True
         return self._search(limit=50, **kwargs)
+
+    def clear_headers(self):
+        self._reuse_header_vals = False
+        self.build_header(header_dict=self.header_template.copy(), api_key=self.api_key)
+
 
     def manual_header_entry(self):
         """
@@ -78,7 +104,7 @@ class BingSearch(object):
         while True:
             headr = OrderedDictWithPrepend()
             if not headr:
-                api_key = eval(input('enter your api key'))
+                api_key = eval(input('enter your api _key'))
                 ua_str = eval(input('enter a valid User-Agent string'))
                 ipaddr = eval(input('enter your ip address (or leave blank to autodetect)'))
                 if not ipaddr:
@@ -86,17 +112,17 @@ class BingSearch(object):
                 headr['Ocp-Apim-Subscription-Key'] = api_key
                 headr['User-Agent'] = ua_str
                 headr['X-Search-ClientIP'] = ipaddr
-            print(('\nYour auth-key is {}\nYour User-Agent string is {}\nYour ip address will appear as {}\n\n\n\n'.format(
+            print(('\nYour auth-_key is {}\nYour User-Agent string is {}\nYour ip address will appear as {}\n\n\n\n'.format(
                 headr['Ocp-Apim-Subscription-Key'], headr['User-Agent'], headr['X-Search-ClientIP'])))
             response1 = eval(input(
-                'To change your auth-key enter (a)\nTo change your User-Agent string enter (u)\nTo change your ip address enter (i)\n\nIf you are satisfied, press (y) to confirm, or (n) to start over.\n> :'))
+                'To change your auth-_key enter (a)\nTo change your User-Agent string enter (u)\nTo change your ip address enter (i)\n\nIf you are satisfied, press (y) to confirm, or (n) to start over.\n> :'))
             if response1.lower() == 'y':
                 return headr
             elif response1.lower() == 'n':
                 del headr
                 continue
             elif response1.lower() == 'a':
-                headr['Ocp-Apim-Subscription-Key'] = eval(input('enter your api key'))
+                headr['Ocp-Apim-Subscription-Key'] = eval(input('enter your api _key'))
                 continue
             elif response1.lower() == 'u':
                 headr['User-Agent'] = eval(input('enter a valid User-Agent string'))
@@ -141,11 +167,24 @@ class BingWebSearch(BingSearch):
             print('Query params PASSED validation.')
         else:
             raise AttributeError('query checker has a bug')
-        print(('run <instance>.search() to run query and print json returned\ncurrent URL format is {}'.format(
-            self._BASE_URL)))
+        print(('run <instance>.search() to run query and print json returned\ncurrent URL format is:\n {}'.format(
+            self.predict_url())))
 
     def __repr__(self):
         return "BingWebSearch objec with query-string = {}".format(self.query)
+
+    def predict_url(self, websearch_only=True):
+        param_dict_copy = self.param_dict.copy()
+        if self.query:
+            param_dict_copy.prepend('query_plaintext', self.query)
+        else: param_dict_copy.prepend('query_plaintext', 'YOUR QUERY STRING GOES HERE')
+        if websearch_only == True:
+            param_dict_copy['responseFilter'] = 'Webpages'
+        for key in param_dict_copy.keys():
+            if param_dict_copy[key] == None:
+                del param_dict_copy[key]
+        return self._BASE_URL + requests.models.urlencode(param_dict_copy)
+
 
 
     def _search(self, limit, override=False, newquery=None):
@@ -164,15 +203,21 @@ class BingWebSearch(BingSearch):
         #       _search() can reinit a new query to restart paging at runtime.
         self._load_q_param_or_pass(override=override, newquery=newquery)
         self._load_websearch_specific_and_paging_params(limit=limit)
+
         #####################################################
         # Query the API. Receive response object.
         # Return NoneType if server-side timeout
         try:
+            ##############################
+            #           BEHOLD!          #
             response_object = requests.get(self._BASE_URL, params=self.param_dict, headers=self.header)
+            ##############################
+
             self._instance_has_called_requests = True
         except requests.Timeout:
             print('requests module timed out. Returning NoneType')
             return None
+
         #####################################################
         # Handle error-codes and Warn about potential garbage results if query URL is too long.
         if len(response_object.url) > 1300:
@@ -182,13 +227,13 @@ class BingWebSearch(BingSearch):
             response_object = self._handle_429_error(url=response_object.url)
         else:
             pass
+
         #####################################################
         # Return packaged JSON or Raw HTML.
         #
         # Updates: 'self.current_offset'
         #          'self.last_response'
         #          'self.last_response_packaged'
-
         self.last_response = response_object
         self.last_url_sent = response_object.url
         if 'textFormat' in list(self.param_dict.keys()) and self.param_dict['textFormat']:
@@ -211,17 +256,17 @@ class BingWebSearch(BingSearch):
             raise AssertionError('query override has been activated but you have not specified a new query.')
 
         # Modify some variable/nonvariable params to enable paging and restrict query to webpages.
-        if 'q' in list(self.param_dict.keys()):
+        if 'query_plaintext' in list(self.param_dict.keys()):
             if not override:
                 pass
             elif override == True:
-                del self.param_dict['q']
-                self.param_dict.prepend('q', self._insert_web_search_query(override=override, newquery=newquery))
+                del self.param_dict['query_plaintext']
+                self.param_dict.prepend('query_plaintext', self._insert_web_search_query(override=override, newquery=newquery))
             else:
                 raise TypeError('override arg is type bool.')
 
         else:
-            self.param_dict.prepend('q', self._insert_web_search_query())
+            self.param_dict.prepend('query_plaintext', self._insert_web_search_query())
 
     def _reinit_query_and_paging(self, newquery):
         self.query = newquery

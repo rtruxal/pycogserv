@@ -39,8 +39,8 @@ From `user_constants`:
     ###############################################
     ## Enter default-header customizations here. ##
     ###############################################
-    HEADERS['Ocp-Apim-Subscription-Key'] = None
-    HEADERS['User-Agent'] = user_agent.firefox
+    HEADERS['Ocp-Apim-Subscription-Key'] = None #<--(THIS SET TO NONE. API KEY MUST BE PASSED TO BingWebSearch CONSTRUCTOR)
+    HEADERS['User-Agent'] = "Mozilla/5.0 (Windows NT 6.2; Win64; x64; rv:16.0.1) Gecko/20121011 Firefox/16.0.1"
     HEADERS['X-Search-ClientIP'] = gethostbyname(gethostname())
     HEADERS['X-MSEdge-ClientID']= None
     HEADERS['Accept'] = None
@@ -65,7 +65,9 @@ From `user_constants`:
 
  You'll notice that `constants.py` has two classes included in it: `user_constants` and `static_constants`. 
  
- **Important Note:** Do not touch `pycogserv.constants.static_constants`. Use the `ref` subpackage for reference so you don't accidentally break things. **Example:** replace ` print constants.static_constants.COUNTRY_CODES` with ` print ref.constants.COUNTRY_CODES`
+ **Important Note:** Do not touch `pycogserv.constants.static_constants`. Use the `ref` subpackage for reference so you don't accidentally break things. 
+ 
+ **Example:** replace ` print constants.static_constants.COUNTRY_CODES` with ` print ref.constants.COUNTRY_CODES`
  * `user_constants` gives access to the default headers and query-modifiers used when a `BingWebSearch` object is instantiated.
  * `ref.constants` can be used as reference. Check out:
     * `ref.constants.COUNTRY_CODES`
@@ -90,7 +92,7 @@ From `user_constants`:
 First things first, instantiate the seach interface object.
 ```py
 >>> web_searcher = BingWebSearch(api_key=api_key, query=search_query, safe=False, headers=user_constants.HEADERS, addtnl_params=user_constants.INCLUDED_PARAMS) 
->>> # see source.constants.static_constants.BASE_QUERY_PARAMS for 
+>>> # see ref.constants.BASE_QUERY_PARAMS for 
 >>> # compatible params. Must be in {param : value} format
  ```
  

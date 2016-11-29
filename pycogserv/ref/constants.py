@@ -6,8 +6,8 @@ These are for Reference! Changing them won't do anything 'cept confuse you.
 
 
 BASE_QUERY_PARAMS = (
-    'q',
-    # <-- if you change this to 'images/search?q' or 'news/search?q' it will change ze behavior much like repsonsefileter
+    'query_plaintext',
+    # <-- if you change this to 'images/search?query_plaintext' or 'news/search?query_plaintext' it will change ze behavior much like repsonsefileter
     'category',  # <--news only
     'cc',
     'count',
@@ -109,7 +109,7 @@ MARKET_CODES = {
 ERROR_CODES = {
         '200' : 'The call succeeded',
         '400' : 'One of the query parameters is missing or not valid',
-        '401' : 'The subscription key is missing or not valid',
+        '401' : 'The subscription _key is missing or not valid',
         '403' : "The user is authenticated but doesn't have permission to the requested resource. Bing may also return this status if the caller exceeded their queries per month quota",
         '404' : 'Page not found: Bing should not be throwing this error. There is likely a fundamental problem with the structure of your query URL.',
         '410' : 'The request was made using HTTP. Only HTTPS is supported.(_BASE_ENDPOINT USES HTTPS. EITHER YOU CHANGED THAT OR YOU ARE NOT AT FAULT)',
@@ -117,6 +117,8 @@ ERROR_CODES = {
     }
 ## All query URLs begin with this.
 BASE_ENDPOINT = 'https://api.cognitive.microsoft.com/bing/v5.0/'
+
+WEBSEARCH_ENDPOINT = BASE_ENDPOINT + 'search?'
 
 ## Complete list of possible endpoint URLs.
 SPECIALTY_API_ENDPOINTS = {
@@ -128,3 +130,4 @@ SPECIALTY_API_ENDPOINTS = {
         'news': 'https://api.cognitive.microsoft.com/bing/v5.0/news/search?',
         'news_trending': 'https://api.cognitive.microsoft.com/bing/v5.0/news/trendingtopics/search?'  # <-- works only for en-US and zh-CN
     }
+

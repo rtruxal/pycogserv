@@ -31,4 +31,6 @@ They're disguised as pointless local variables. Here's how you gettem --
     (-_-)*'`
 
 """
-__all__ = ['constants_reference']
+import constants, useful_functions
+
+__all__ = ['constants', 'useful_functions']

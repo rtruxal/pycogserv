@@ -60,6 +60,10 @@ class ResponseChecker():
             if response.status_code == 429:
                 print('queries/second quota exceeded. this func will make 5 attempts to resend.')
                 return '429'
+            elif response.status_code == 400:
+                json = response.json()
+                print '400 error: Bad params\n\nBing is showing {} param(s) set to {}'.format(json['errors'][0]['parameter'], json['errors'][0]['value'])
+                raise ValueError()
             elif str(response.status_code) in list(static_constants._ERROR_CODES.keys()):
                 raise AssertionError(static_constants._ERROR_CODES[str(response.status_code)])
             else:
