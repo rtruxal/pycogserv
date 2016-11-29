@@ -27,8 +27,49 @@ True
 ```
 
 
-Usage
-=====
+BingLite Usage
+==============
+####Shebam! Test new queries in < 3 lines of code.
+
+**New:** BingLite is a self-contained 1-page search-interface. It does 3 things:
+ * Gets built with your API key and search-query (there are more optional params)
+```py
+>>> from pycogserv import BingLite
+>>>
+>>> key = 'RAAAAAANDOMLETTERSANDNUMBERRRSS23486832'
+>>> query = '"Look! double quotes!"'
+>>> 
+>>> Searcher = BingLite(key, query1)
+
+The search-interface has been initialized w/ the following params:
+ 
+Endpoint-Type: web
+ 
+Query-URL: https://api.cognitive.microsoft.com/bing/v5.0/search?q=This+looks+like+a+good+query%21&count=50&mkt=en-us&offset=0
+ 
+Header-Dict: OrderedDict([('Ocp-Apim-Subscription-Key', 'RAAAAAANDOMLETTERSANDNUMBERRRSS23486832'), ('User-Agent', 'Mozilla/5.0 (Windows NT 6.2; Win64; x64; rv:16.0.1) Gecko/20121011 Firefox/16.0.1'), ('X-Search-ClientIP', '169.254.182.3')])
+```
+ 
+ 
+ * Then, you search using one of the 3 exposed search methods with usage shown here:
+    * `packaged_json_object = BingLiteInstance.search_2_packaged_json()`
+    * `raw_json_dict = BingLiteInstance.search_2_json()`
+    * `raw_html_str = BingLiteInstance.search_2_html()`
+
+
+ * And then we rinse and repeat!
+ ```py
+>>> BingLiteInstance.reset_query_string_and_paging('IP:"8.8.8.8"')
+>>> new_packaged_json_object = BingLiteInstance.search_2_packaged_json()
+>>>
+>>> BingLiteInstance.reset_query_string_and_paging('Yet another plaintext query')
+>>> new_NEW_packaged_json_object = BingLiteInstance.search_2_packaged_json()
+```
+ 
+paging support coming soon.
+
+BingWebSearch Usage
+===================
 #Step 1: Customize Headers & Optional Query Params
 
 

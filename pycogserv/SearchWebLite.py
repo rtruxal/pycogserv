@@ -82,12 +82,6 @@ class BingLite(object):
     ###############################################
     ##   _methods used BEFORE request is sent    ##
     ###############################################
-    def _reset_query_string_and_paging(self, unencoded_query_str):
-        self.query_plaintext = unencoded_query_str
-        self._encoded_q = urlencode(dict(q=self.query_plaintext))
-        self.current_offset = 0
-        self.total_estimated_matches = 0
-
     def _predict_url(self, bypass_setting_attrs=False):
         """Can be used before or after dictionaries have been cleaned of NoneTypes"""
         prediction = self.base_url + self._encoded_q + '&' + urlencode(self.params)
@@ -111,7 +105,7 @@ class BingLite(object):
     ###############################################
     ##    callable methods which make requests   ##
     ###############################################
-    def search_2_json(self, newquery=False):
+    def search_2_json(self, return_html=False):
         try:
             ##############################
             #           BEHOLD!          #
@@ -134,12 +128,29 @@ class BingLite(object):
             response_object = self._handle_429_error(url=response_object.url)
         else:
             pass
+        if return_html:
+            return response_object.text()
         return response_object.json()
 
     def search_2_packaged_json(self):
         """returns list of WebResult objects w/ len(list) == # of links returned"""
         raw_json = self.search_2_json()
         return self._parse_json(raw_json)
+
+    def search_2_html(self):
+        if 'textFormat' in self.params.keys() and self.params['textFormat'].upper() == 'HTML':
+            return self.search_2_json(return_html=True)
+        else:
+            raise AssertionError('Attempting html retreival without specifying html under "textFormat" param')
+
+    ###############################################
+    ##     change the query and reset paging     ##
+    ###############################################
+    def reset_query_string_and_paging(self, unencoded_query_str):
+        self.query_plaintext = unencoded_query_str
+        self._encoded_q = urlencode(dict(q=self.query_plaintext))
+        self.current_offset = 0
+        self.total_estimated_matches = 0
 
     ###############################################
     ##   _methods used AFTER request is sent     ##
