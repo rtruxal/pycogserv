@@ -39,7 +39,7 @@ BingLite Usage
 >>> key = 'RAAAAAANDOMLETTERSANDNUMBERRRSS23486832'
 >>> query = '"Look! double quotes!"'
 >>> 
->>> Searcher = BingLite(key, query1)
+>>> BingLiteInstance = BingLite(key, query1)
 
 The search-interface has been initialized w/ the following params:
  
