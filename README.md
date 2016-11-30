@@ -47,7 +47,7 @@ The search-interface has been initialized w/ the following params:
  
 'Query-URL:https://api.cognitive.microsoft.com/bing/v5.0/search?q=%22Look%21+double+quotes%21%22&count=50&mkt=en-us&offset=0'
  
-'Header-Dict: OrderedDict([('Ocp-Apim-Subscription-Key', 'RAAAAAANDOMLETTERSANDNUMBERRRSS23486832'), ('User-Agent', 'Mozilla/5.0 (Windows NT 6.2; Win64; x64; rv:16.0.1) Gecko/20121011 Firefox/16.0.1'), ('X-Search-ClientIP', '169.254.182.3')])'
+'Header-Dict: OrderedDict([('Ocp-Apim-Subscription-Key', 'RAAAAAANDOMLETTERSANDNUMBERRRSS23486832'), ('User-Agent', 'Mozilla/5.0 (Windows NT 6.2; Win64; x64; rv:16.0.1) Gecko/20121011 Firefox/16.0.1'), ('X-Search-ClientIP', '8.8.8.8')])'
 ```
  
  
