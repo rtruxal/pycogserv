@@ -105,7 +105,8 @@ class BingLite(object):
     ###############################################
     ##    callable methods which make requests   ##
     ###############################################
-    def search_2_json(self, return_html=False):
+
+    def search_2_response_obj(self):
         try:
             ##############################
             #           BEHOLD!          #
@@ -115,9 +116,13 @@ class BingLite(object):
             if self._verbose:
                 self._url_comparisons.append((self._predict_url(), self.last_actual_url))
             self.queries_run += 1
+            return response_object
         except requests.Timeout:
-            print('requests module timed out. Returning NoneType')
-            return None
+            print('request timed out. Aborting search.')
+            raise Warning('Request timed out')
+
+    def search_2_json(self, return_html=False):
+        response_object = self.search_2_response_obj()
         # Handle error-codes and Warn about potential garbage results if query URL is too long.
         if len(response_object.url) > 1300:
             print('WARNING: URL too long at {} characters.\n Bing can silently truncate your query.\n Limit URLs to < 1,200 chars.').format(len(response_object.url))
@@ -142,6 +147,9 @@ class BingLite(object):
             return self.search_2_json(return_html=True)
         else:
             raise AssertionError('Attempting html retreival without specifying html under "textFormat" param')
+
+
+
 
     ###############################################
     ##     change the query and reset paging     ##
@@ -185,8 +193,6 @@ class BingLite(object):
                 raise IOError(local_static_constants._ERROR_CODES['429'])
         return r2
 
-    def search_2_html(self):
-        pass
 
 
 ###############################################
