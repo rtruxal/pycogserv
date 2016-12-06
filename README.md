@@ -2,10 +2,10 @@
 Intro
 =====
 
-##!!There is a new file int he root dir called TALKSMACK.txt!! 
-THIS FILE IS FOR TALKING SMACK. I WILL ACCEPT ANY AND ALL PUBLIC CONTRIBUTIONS TO IT.  
+##IMPORTANT NOTE: THIS CODE IS UNDER CONSTRUCTION.
+####See `pycogserv.SearchWebLite.py` for a working interface. It is self-contained, and the only portion of this code that is working reliably as of 12-6-2016.
 
-
+===========================================================================
 ##VERSION=0.0.4 | supports Python 2.7
 
 
@@ -251,6 +251,9 @@ For more advanced usage such as computational queries & compound queries, check 
 
 Notes
 =====
+
+##!!There is a new file int he root dir called TALKSMACK.txt!! 
+THIS FILE IS FOR TALKING SMACK. I WILL ACCEPT ANY AND ALL PUBLIC CONTRIBUTIONS TO IT.
 
 2016-11-15: Added support & checking-mechanism for web-search query parameters
 2016-11-18: Added separate modules for Universal constants and validators.
