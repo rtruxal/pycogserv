@@ -66,6 +66,7 @@ class BingLite(object):
         self._init_constructor_funcs()
         self._url_comparisons = []
 
+
     def _init_constructor_funcs(self):
         self.base_url = local_static_constants.API_ENDPOINTS[self.endpoint_type]
         # encode your query to be URL-rdy
@@ -232,7 +233,7 @@ class WebResult(object):
     def __repr__(self):
         return 'WebResponse Obj: {}'.format(self.display_url)
 
-
+requests.get
 
 ###############################################
 ##                                           ##

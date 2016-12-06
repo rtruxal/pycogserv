@@ -37,7 +37,7 @@ class BingSearch(object):
         self.api_key = api_key
         self.safe = safe
         self.query = query
-        self.header_template = header_dict.copy()
+        self.header = header_dict.copy()
         # Paging-support
         self.current_offset = 0
         self.total_estimated_matches = None
@@ -91,7 +91,7 @@ class BingSearch(object):
 
     def clear_headers(self):
         self._reuse_header_vals = False
-        self.build_header(header_dict=self.header_template.copy(), api_key=self.api_key)
+        self.build_header(header_dict=self.header.copy(), api_key=self.api_key)
 
 
     def manual_header_entry(self):

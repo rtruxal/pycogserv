@@ -2,8 +2,11 @@
 Intro
 =====
 
+##!!There is a new file int he root dir called TALKSMACK.txt!! 
+THIS FILE IS FOR TALKING SMACK. I WILL ACCEPT ANY AND ALL PUBLIC CONTRIBUTIONS TO IT.  
 
-VERSION=0.0.4 | supports Python 2.7
+
+##VERSION=0.0.4 | supports Python 2.7
 
 
 ####An Overly Explanatory Intro to Cognitive Services aka Bing Search API v5
